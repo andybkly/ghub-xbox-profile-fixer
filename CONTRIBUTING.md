@@ -2,10 +2,10 @@
 
 Bug reports and pull requests are welcome.
 
-For game-detection problems, include:
+For XBOX game-detection problems, include:
 
 - the game name;
-- the Xbox install-folder layout;
+- the XBOX install-folder layout;
 - the relevant `MicrosoftGame.config` executable entry, if present;
 - the executable that actually appears in Task Manager while the game runs.
 

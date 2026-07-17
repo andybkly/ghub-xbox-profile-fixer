@@ -99,53 +99,6 @@ namespace GHubProfileUtility
             catch { paths.Add(path.Trim()); }
         }
 
-        public TransferResult TransferG502Assignments()
-        {
-            int profileCount = 0, assignmentCount = 0;
-            foreach (var rawProfile in Profiles)
-            {
-                var profile = Dict(rawProfile);
-                object rawAssignments;
-                if (profile == null || !profile.TryGetValue("assignments", out rawAssignments)) continue;
-                var assignments = ToMutableList(rawAssignments);
-                profile["assignments"] = assignments;
-                var wired = new Dictionary<string, Dictionary<string, object>>(StringComparer.Ordinal);
-                var wireless = new Dictionary<string, Dictionary<string, object>>(StringComparer.Ordinal);
-                foreach (object rawAssignment in assignments)
-                {
-                    var assignment = Dict(rawAssignment);
-                    string slot = Text(assignment, "slotId");
-                    if (slot == null) continue;
-                    if (slot.StartsWith("g502x-lightspeed_", StringComparison.Ordinal)) wireless[slot.Substring(17)] = assignment;
-                    else if (slot.StartsWith("g502x_", StringComparison.Ordinal)) wired[slot.Substring(6)] = assignment;
-                }
-                int changed = 0;
-                foreach (var pair in wired)
-                {
-                    if (pair.Key == "mouse_settings" || pair.Key == "lighting_setting_firmware") continue;
-                    Dictionary<string, object> target;
-                    if (wireless.TryGetValue(pair.Key, out target))
-                    {
-                        string sourceCard = Text(pair.Value, "cardId");
-                        if (!String.Equals(Text(target, "cardId"), sourceCard, StringComparison.Ordinal))
-                        {
-                            target["cardId"] = sourceCard;
-                            changed++;
-                        }
-                    }
-                    else
-                    {
-                        var copy = new Dictionary<string, object>(pair.Value);
-                        copy["slotId"] = "g502x-lightspeed_" + pair.Key;
-                        assignments.Add(copy);
-                        changed++;
-                    }
-                }
-                if (changed > 0) { profileCount++; assignmentCount += changed; }
-            }
-            return new TransferResult(profileCount, assignmentCount);
-        }
-
         public int AddXboxGames(IEnumerable<XboxGame> selectedGames)
         {
             var games = selectedGames.GroupBy(g => Normalize(g.ExecutablePath), StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
@@ -292,10 +245,4 @@ namespace GHubProfileUtility
         }
     }
 
-    internal sealed class TransferResult
-    {
-        public int ProfileCount { get; }
-        public int AssignmentCount { get; }
-        public TransferResult(int profileCount, int assignmentCount) { ProfileCount = profileCount; AssignmentCount = assignmentCount; }
-    }
 }

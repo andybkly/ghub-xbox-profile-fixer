@@ -3,7 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>GHubProfileUtility</AssemblyName>
+    <AssemblyName>GHubXBOXGamePassProfileFixer</AssemblyName>
     <RootNamespace>GHubProfileUtility</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Deterministic>true</Deterministic>
@@ -11,6 +11,9 @@
     <DebugType>portable</DebugType>
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
+    <Version>0.2.0</Version>
+    <AssemblyVersion>0.2.0.0</AssemblyVersion>
+    <FileVersion>0.2.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Web.Extensions" />

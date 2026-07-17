@@ -12,7 +12,7 @@ Do not upload a private G Hub `settings.db` to a public issue. It can contain lo
 
 ## Trust model
 
-The utility deliberately:
+The G Hub XBOX Game Pass Profile Fixer deliberately:
 
 - makes no network requests;
 - does not request administrator access;
