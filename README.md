@@ -11,9 +11,11 @@ The utility does not modify game files and never overwrites the selected `settin
 
 ## Download
 
-Download `GHubProfileUtility.exe` from the repository's **Releases** page. Release binaries are built from the public source by GitHub Actions. Each release also includes a SHA-256 checksum and GitHub build-provenance attestation.
+### [Download G Hub Profile Utility v0.1.0 (.exe)](https://github.com/andybkly/ghub-profile-utility/releases/download/v0.1.0/GHubProfileUtility.exe)
 
-Windows SmartScreen may warn that the publisher is unknown because the project does not currently use a paid code-signing certificate. You can inspect the source, verify the checksum, review the automated build, or build it yourself.
+[View release notes and SHA-256 checksum](https://github.com/andybkly/ghub-profile-utility/releases/tag/v0.1.0)
+
+The EXE is built from the public source by GitHub Actions.
 
 ## Requirements
 
