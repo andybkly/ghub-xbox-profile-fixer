@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- Replaced the WinForms interface with a responsive WPF interface.
+- Rebuilt the approved three-step layout using device-independent sizing.
+- Improved behaviour at 125%, 150% and other Windows display scales.
+- Preserved the working XBOX scanner, game icons and safe database-copy logic.
+
 ## 0.2.1
 
 - Fixed the main content rendering underneath the navigation sidebar.
