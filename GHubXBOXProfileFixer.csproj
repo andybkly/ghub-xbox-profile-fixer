@@ -17,6 +17,9 @@
     <FileVersion>0.3.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
+    <!-- System.Web.Extensions depends on System.Web. WPF's markup compiler must
+         receive both references explicitly on clean GitHub Actions runners. -->
+    <Reference Include="System.Web" />
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>
 </Project>
