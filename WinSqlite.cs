@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace GHubProfileUtility
+namespace GHubXBOXProfileFixer
 {
     internal static class WinSqlite
     {

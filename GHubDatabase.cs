@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
 
-namespace GHubProfileUtility
+namespace GHubXBOXProfileFixer
 {
     internal sealed class GHubDatabase
     {

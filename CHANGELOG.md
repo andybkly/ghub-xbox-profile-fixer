@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+- Fixed the main content rendering underneath the navigation sidebar.
+- Replaced fixed header positioning with DPI-safe flow layout.
+- Added explicit per-monitor DPI awareness and WinForms high-DPI auto-resizing.
+
 ## 0.2.0
 
 - Refocused the utility exclusively on XBOX / PC Game Pass profile detection.

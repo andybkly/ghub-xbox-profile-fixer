@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace GHubProfileUtility
+namespace GHubXBOXProfileFixer
 {
     internal sealed class XboxGame
     {

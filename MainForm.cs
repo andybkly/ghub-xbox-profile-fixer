@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GHubProfileUtility
+namespace GHubXBOXProfileFixer
 {
     internal sealed class MainForm : Form
     {
@@ -53,25 +53,31 @@ namespace GHubProfileUtility
         {
             var header = new Panel { Dock = DockStyle.Top, Height = 64, BackColor = Surface, Padding = new Padding(24, 0, 24, 0) };
             header.Paint += (s, e) => e.Graphics.DrawLine(new Pen(Border), 0, header.Height - 1, header.Width, header.Height - 1);
-            Controls.Add(header);
-
-            var mark = new Label
+            var headerFlow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = Surface,
+                Padding = new Padding(0, 13, 0, 0)
+            };
+            header.Controls.Add(headerFlow);
+            headerFlow.Controls.Add(new Label
             {
                 Text = "↗",
                 Font = new Font("Segoe UI Semibold", 17F),
                 ForeColor = Green,
                 AutoSize = true,
-                Location = new Point(24, 16)
-            };
-            header.Controls.Add(mark);
+                Margin = new Padding(0, 0, 10, 0)
+            });
             var appName = new Label
             {
                 Text = "G Hub XBOX Game Pass Profile Fixer",
                 Font = new Font("Segoe UI Semibold", 13F),
                 AutoSize = true,
-                Location = new Point(60, 19)
+                Margin = new Padding(0, 5, 12, 0)
             };
-            header.Controls.Add(appName);
+            headerFlow.Controls.Add(appName);
             var unofficial = new Label
             {
                 Text = "Unofficial",
@@ -79,17 +85,17 @@ namespace GHubProfileUtility
                 BackColor = Canvas,
                 AutoSize = true,
                 Padding = new Padding(8, 4, 8, 4),
-                Location = new Point(354, 16)
+                Margin = new Padding(0, 1, 0, 0)
             };
-            header.Controls.Add(unofficial);
+            headerFlow.Controls.Add(unofficial);
 
-            var body = new Panel { Dock = DockStyle.Fill, BackColor = Canvas };
-            Controls.Add(body);
-            header.BringToFront();
+            var body = new TableLayoutPanel { Dock = DockStyle.Fill, BackColor = Canvas, ColumnCount = 2, RowCount = 1, Margin = Padding.Empty, Padding = Padding.Empty };
+            body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 230F));
+            body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            body.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-            var sidebar = new Panel { Dock = DockStyle.Left, Width = 230, BackColor = Surface, Padding = new Padding(18, 42, 18, 18) };
+            var sidebar = new Panel { Dock = DockStyle.Fill, BackColor = Surface, Padding = new Padding(18, 42, 18, 18), Margin = Padding.Empty };
             sidebar.Paint += (s, e) => e.Graphics.DrawLine(new Pen(Border), sidebar.Width - 1, 0, sidebar.Width - 1, sidebar.Height);
-            body.Controls.Add(sidebar);
             for (int i = 0; i < 3; i++)
             {
                 int step = i + 1;
@@ -115,8 +121,12 @@ namespace GHubProfileUtility
             mainHost.Dock = DockStyle.Fill;
             mainHost.BackColor = Canvas;
             mainHost.Padding = new Padding(34, 30, 34, 28);
-            body.Controls.Add(mainHost);
-            sidebar.BringToFront();
+            mainHost.Margin = Padding.Empty;
+            body.Controls.Add(sidebar, 0, 0);
+            body.Controls.Add(mainHost, 1, 0);
+
+            Controls.Add(body);
+            Controls.Add(header);
         }
 
         private void NavigateFromSidebar(int step)

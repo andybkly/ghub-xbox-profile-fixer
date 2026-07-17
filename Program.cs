@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace GHubProfileUtility
+namespace GHubXBOXProfileFixer
 {
     internal static class Program
     {
