@@ -257,6 +257,42 @@ namespace GHubXBOXProfileFixer
             }
         }
 
+        // Build and validate first. File.Replace preserves the original as the backup
+        // in the same operation that installs the update; never delete the source first.
+        public string ApplyWithBackup(string sourcePath, Action ensureGHubClosed)
+        {
+            if (ensureGHubClosed == null) throw new ArgumentNullException(nameof(ensureGHubClosed));
+            string source = Path.GetFullPath(sourcePath);
+            string staged = Path.Combine(Path.GetDirectoryName(source), ".ghub-apply-" + Guid.NewGuid().ToString("N") + ".db");
+            Action check = () =>
+            {
+                ensureGHubClosed();
+                foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
+                    if (File.Exists(source + suffix))
+                        throw new IOException("The database has SQLite journal files. Open G HUB, quit it normally, then try again.");
+            };
+            check();
+            byte[] original = File.ReadAllBytes(source);
+            try
+            {
+                SaveCopy(source, staged);
+                check();
+                if (!original.SequenceEqual(File.ReadAllBytes(source)))
+                    throw new IOException("The source database changed. Reload it and try again.");
+                string stem = Path.Combine(Path.GetDirectoryName(source), Path.GetFileNameWithoutExtension(source) +
+                    "-backup-" + DateTime.Now.ToString("ddMMyyyy", System.Globalization.CultureInfo.InvariantCulture));
+                string backup = stem + ".db";
+                for (int i = 2; File.Exists(backup); i++) backup = stem + "-" + i + ".db";
+                File.Replace(staged, source, backup);
+                return backup;
+            }
+            finally
+            {
+                foreach (string suffix in new[] { "", "-wal", "-shm", "-journal" })
+                    try { File.Delete(staged + suffix); } catch { }
+            }
+        }
+
         private void ValidateRelationships()
         {
             var appIds = new HashSet<string>(Applications.Select(Dict).Where(a => a != null).Select(a => Text(a, "applicationId")).Where(x => x != null), StringComparer.Ordinal);

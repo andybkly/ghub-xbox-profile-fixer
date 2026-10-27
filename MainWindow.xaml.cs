@@ -14,7 +14,6 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Forms = System.Windows.Forms;
-using DrawingIcon = System.Drawing.Icon;
 
 namespace GHubXBOXProfileFixer
 {
@@ -49,7 +48,7 @@ namespace GHubXBOXProfileFixer
 
             SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "Database");
             SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "Game library");
-            SetNavState(Step3Nav, Step3NavText, step == 3, false, "3", "Export");
+            SetNavState(Step3Nav, Step3NavText, step == 3, false, "3", "Apply profiles");
         }
 
         private void SetNavState(System.Windows.Controls.Button border, System.Windows.Controls.TextBlock text, bool active, bool complete, string number, string label)
@@ -132,7 +131,7 @@ namespace GHubXBOXProfileFixer
                 foreach (XboxGame game in merged)
                 {
                     game.AlreadyRegistered = registered.Contains(Normalize(game.ExecutablePath));
-                    var model = new GameViewModel(game, LoadIcon(game.ExecutablePath));
+                    var model = new GameViewModel(game, GameIconLoader.Load(game));
                     bool selected;
                     if (previous.TryGetValue(Normalize(game.ExecutablePath), out selected)) model.Selected = selected && model.CanSelect;
                     games.Add(model);
@@ -202,24 +201,9 @@ namespace GHubXBOXProfileFixer
                 AlreadyRegistered = alreadyRegistered
             };
             manualGames.Add(game);
-            games.Add(new GameViewModel(game, LoadIcon(game.ExecutablePath)));
+            games.Add(new GameViewModel(game, GameIconLoader.Load(game)));
             ScanSummaryText.Text = games.Count + (games.Count == 1 ? " game found" : " games found");
             UpdateSelectedCount();
-        }
-
-        private static ImageSource LoadIcon(string executablePath)
-        {
-            try
-            {
-                using (DrawingIcon icon = DrawingIcon.ExtractAssociatedIcon(executablePath))
-                {
-                    if (icon == null) return null;
-                    BitmapSource image = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                    image.Freeze();
-                    return image;
-                }
-            }
-            catch { return null; }
         }
 
         private void GameCheckBox_Click(object sender, RoutedEventArgs e) => UpdateSelectedCount();
@@ -252,6 +236,33 @@ namespace GHubXBOXProfileFixer
         }
 
         private void BackToGames_Click(object sender, RoutedEventArgs e) => ShowStep(2);
+
+        private void ApplyDatabase_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidateSource()) return;
+            var selected = games.Where(g => g.Selected && g.CanSelect).Select(g => g.Game).ToList();
+            if (selected.Count == 0) { ShowError("Select at least one missing game first."); return; }
+            string backup;
+            int added;
+            try
+            {
+                var database = GHubDatabase.Load(DatabasePathBox.Text);
+                added = database.AddXboxGames(selected);
+                if (added == 0) { RefreshRegistration(); ShowStep(2); return; }
+                backup = database.ApplyWithBackup(DatabasePathBox.Text, () =>
+                {
+                    if (IsGHubRunning()) throw new InvalidOperationException("G HUB is running. Quit it from the system tray before applying profiles.");
+                });
+            }
+            catch (Exception ex) { ShowError("The update could not be completed.\n\n" + ex.Message); return; }
+            MessageBox.Show(this,
+                "Added " + added + (added == 1 ? " game profile." : " game profiles.") +
+                "\n\nUpdated:\n" + DatabasePathBox.Text + "\n\nOriginal settings backed up to:\n" + backup +
+                "\n\nStart G HUB to use the profiles.",
+                "Profiles applied", MessageBoxButton.OK, MessageBoxImage.Information);
+            try { RefreshRegistration(); ShowStep(2); }
+            catch { ShowStep(1); SetDatabaseReady(false); }
+        }
 
         private void CreateDatabase_Click(object sender, RoutedEventArgs e)
         {

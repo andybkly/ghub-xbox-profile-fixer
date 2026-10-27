@@ -17,6 +17,6 @@ The G Hub XBOX Game Pass Profile Fixer deliberately:
 - makes no network requests;
 - does not request administrator access;
 - never modifies game executables;
-- never overwrites the source database;
+- preserves the original database in a dated backup before applying profiles;
 - validates the output database before success;
 - is built from public source by GitHub Actions.

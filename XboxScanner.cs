@@ -159,6 +159,53 @@ namespace GHubXBOXProfileFixer
             }
         }
 
+        // Xbox titles often keep their artwork in the package, not in the EXE.
+        public static IEnumerable<string> ArtworkPaths(XboxGame game)
+        {
+            var manifests = new List<string>();
+            string folder = Path.GetDirectoryName(Path.GetFullPath(game.ExecutablePath));
+            for (int depth = 0; depth < 6 && folder != null; depth++)
+            {
+                foreach (string name in new[] { "MicrosoftGame.config", "AppxManifest.xml" })
+                    manifests.Add(Path.Combine(folder, name));
+                folder = Path.GetDirectoryName(folder);
+            }
+            if (!String.IsNullOrWhiteSpace(game.SourceFolder))
+                foreach (string name in new[] { "MicrosoftGame.config", "AppxManifest.xml" })
+                    manifests.AddRange(SafeFiles(game.SourceFolder, name, 3));
+            var images = new List<string>();
+            foreach (string manifest in manifests.Distinct(StringComparer.OrdinalIgnoreCase).Where(File.Exists))
+            {
+                try
+                {
+                    var doc = XDocument.Load(manifest, LoadOptions.None);
+                    string root = Path.GetDirectoryName(Path.GetFullPath(manifest)) + Path.DirectorySeparatorChar;
+                    foreach (string key in new[] { "Square150x150Logo", "Square44x44Logo", "Square480x480Logo", "StoreLogo", "Logo" })
+                    {
+                        var values = doc.Descendants().Where(e => e.Name.LocalName == "ShellVisuals" || e.Name.LocalName == "VisualElements")
+                            .Select(e => Attribute(e, key))
+                            .Concat(doc.Descendants().Where(e => e.Name.LocalName == key).Select(e => e.Value));
+                        foreach (string value in values.Where(v => !String.IsNullOrWhiteSpace(v)))
+                        {
+                            if (Path.IsPathRooted(value)) continue;
+                            string image = Path.GetFullPath(Path.Combine(root, value.Replace('/', Path.DirectorySeparatorChar)));
+                            if (!image.StartsWith(root, StringComparison.OrdinalIgnoreCase)) continue;
+                            string extension = Path.GetExtension(image).ToLowerInvariant();
+                            if (!new[] { ".png", ".jpg", ".jpeg", ".bmp", ".ico" }.Contains(extension)) continue;
+                            if (File.Exists(image)) images.Add(image);
+                            // Packaged assets may only exist as Logo.scale-200.png, etc.
+                            string directory = Path.GetDirectoryName(image);
+                            if (Directory.Exists(directory))
+                                images.AddRange(Directory.GetFiles(directory, Path.GetFileNameWithoutExtension(image) + ".*" + extension)
+                                    .OrderByDescending(x => x, StringComparer.OrdinalIgnoreCase));
+                        }
+                    }
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is System.Xml.XmlException || ex is ArgumentException || ex is NotSupportedException) { }
+            }
+            return images.Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+
         private static string Attribute(XElement element, string name)
             => element.Attributes().FirstOrDefault(a => a.Name.LocalName.Equals(name, StringComparison.OrdinalIgnoreCase))?.Value;
 

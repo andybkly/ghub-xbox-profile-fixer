@@ -4,7 +4,7 @@ An unofficial, open-source Windows utility for PC games installed through the XB
 
 The tool scans XBOX game installations, identifies the actual game executables and creates the missing G Hub application and profile records selected by the user.
 
-It does not modify game files and never overwrites the selected `settings.db`. It creates a separate database and runs SQLite integrity and relationship checks before reporting success.
+It does not modify game files. It builds and validates the updated database, then applies it with an automatic dated backup. Exporting a separate copy remains available.
 
 > This project is not affiliated with or endorsed by Logitech or Microsoft. Logitech, G Hub, XBOX and Game Pass are trademarks of their respective owners.
 
@@ -25,11 +25,11 @@ Windows SmartScreen may display an **Unknown publisher** warning because the pro
 - Supports custom XBOX installation folders
 - Uses `MicrosoftGame.config` to identify the intended PC executable where available
 - Shows games that are already registered or missing from G Hub
-- Displays icons extracted locally from installed game executables
+- Displays local Xbox manifest artwork, with embedded executable icons as a fallback
 - Includes manual folder and executable options for unusual games
 - Creates proper G Hub application and default-profile records
 - Starts new profiles with the current G Hub Desktop assignments
-- Keeps the original G Hub database untouched
+- Automatically preserves the original database in a dated backup when applying profiles
 - Performs SQLite integrity and profile-relationship checks on the output
 
 ## Requirements
@@ -44,7 +44,7 @@ Windows SmartScreen may display an **Unknown publisher** warning because the pro
 
 1. Quit G Hub from its system-tray icon.
 2. In Task Manager, confirm that `lghub.exe`, `lghub_agent.exe` and `lghub_system_tray.exe` are closed.
-3. Keep a backup of `%LOCALAPPDATA%\LGHUB\settings.db`.
+3. The **Apply to G HUB** option automatically creates a dated backup beside the selected database.
 
 The utility checks for running G Hub processes and refuses to create a database while they are open.
 
@@ -56,11 +56,16 @@ The utility checks for running G Hub processes and refuses to create a database 
 4. Scan for installed games.
 5. Review the executable path for each result.
 6. Select the missing games you want to add.
-7. Choose **Review selection**, then **Export profiles** to save the fixed database.
+7. Choose **Review selection**, then **Apply to G HUB**.
+8. Start G HUB. No manual copying or renaming is needed.
+
+The original is saved beside the selected database as `settings-backup-27102026.db` (using the current date). Further backups on the same day use `-2`, `-3`, etc. Existing backups are preserved. Applying is blocked while G HUB is running or SQLite journal files are present.
+
+To save a separate database instead, choose **Export copy…**.
 
 If a game is not detected automatically, use **Add folder** or **Add executable**.
 
-## Installing the fixed database
+## Installing an exported copy (optional)
 
 1. Keep G Hub closed.
 2. Back up the original `%LOCALAPPDATA%\LGHUB\settings.db`.
@@ -82,7 +87,7 @@ Game installation layouts vary, so please report titles that are not detected co
 - It runs as the current user and does not request elevation.
 - It reads only the database and game folders selected or discovered locally.
 - Game executables are inspected by path only; their contents are not changed.
-- The original G Hub database is never overwritten by the utility.
+- Applying replaces the selected database only after validation, preserving the original in a dated backup. Export copy leaves the selected database untouched.
 - There is no telemetry, updater or background service.
 
 See [SECURITY.md](SECURITY.md) for reporting security issues.

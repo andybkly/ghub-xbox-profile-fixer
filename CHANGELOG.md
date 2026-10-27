@@ -1,3 +1,11 @@
+## Unreleased
+
+- Add Apply to G HUB with validated replacement and automatic dated backups.
+- Preserve existing same-day backups with numbered filenames.
+- Block applying when G HUB is running, settings changed, or SQLite journal files remain.
+- Load Xbox manifest artwork and qualified image assets before trying embedded EXE icons.
+- Add regression checks for backups, interrupted applies and artwork loading.
+
 # Changelog
 
 ## 0.3.0

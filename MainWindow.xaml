@@ -83,7 +83,7 @@
                         </Grid>
                     </Border>
 
-                    <TextBlock Grid.Row="2" Text="A separate copy is created. Your original settings and assignments are kept." TextWrapping="Wrap"
+                    <TextBlock Grid.Row="2" Text="Apply profiles with an automatic dated backup, or export a separate copy." TextWrapping="Wrap"
                                Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="4,18,0,0" />
                     <Button Grid.Row="4" Content="Continue" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"
                             Width="150" Click="DatabaseContinue_Click" />
@@ -197,22 +197,23 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="Ready to export" FontFamily="Segoe UI Semibold" FontSize="32" />
-                        <TextBlock Text="Export a separate settings file with profiles for your selected games." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
+                        <TextBlock Text="Ready to apply" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Add the selected profiles to this database with an automatic backup." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
                     <Border Grid.Row="1" MaxHeight="300" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
-                            <TextBlock Text="EXPORT SUMMARY" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,14" />
+                            <TextBlock Text="SELECTED PROFILES" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,14" />
                             <TextBlock x:Name="CreateCountText" FontFamily="Segoe UI Semibold" FontSize="18" />
                             <TextBlock x:Name="CreateNamesText" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                             <TextBlock x:Name="CreateSourceText" Foreground="{StaticResource MutedBrush}" Margin="0,16,0,0" TextTrimming="CharacterEllipsis" />
                         </StackPanel></ScrollViewer>
                     </Border>
-                    <TextBlock Grid.Row="2" Text="The export is checked before saving. Close G HUB and back up settings.db before installing it." TextWrapping="Wrap"
+                    <TextBlock Grid.Row="2" Text="Keep G HUB closed. Apply saves a dated backup beside your database, then installs the validated update." TextWrapping="Wrap"
                                Foreground="{StaticResource GreenBrush}" Margin="4,18,0,0" />
                     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Back" Style="{StaticResource SecondaryButton}" Width="100" Margin="0,0,10,0" Click="BackToGames_Click" />
-                        <Button Content="Export profiles" Style="{StaticResource PrimaryButton}" Width="210" Click="CreateDatabase_Click" />
+                        <Button Content="Export copy…" Style="{StaticResource SecondaryButton}" Width="145" Margin="0,0,10,0" Click="CreateDatabase_Click" />
+                        <Button Content="Apply to G HUB" Style="{StaticResource PrimaryButton}" Width="170" Click="ApplyDatabase_Click" />
                     </StackPanel>
                 </Grid>
             </Grid>
