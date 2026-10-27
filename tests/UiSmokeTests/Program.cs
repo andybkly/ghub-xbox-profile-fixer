@@ -48,6 +48,10 @@ internal static class UiSmokeTests
         try
         {
             var app = new App(); app.InitializeComponent();
+            // Application.Run normally installs this context. The smoke harness
+            // pumps its own dispatcher, so install it before starting async UI work.
+            System.Threading.SynchronizationContext.SetSynchronizationContext(
+                new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
             // The app is created manually so StartupUri is never used by a dispatcher run.
             window = new MainWindow(); window.Show(); Drain();
             Directory.CreateDirectory("previews");
