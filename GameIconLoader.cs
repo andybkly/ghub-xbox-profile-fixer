@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using DrawingIcon = System.Drawing.Icon;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -10,12 +10,6 @@ namespace GHubXBOXProfileFixer
 {
     internal static class GameIconLoader
     {
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "ExtractIconExW")]
-        private static extern uint ExtractIconEx(string file, int index, out IntPtr large, out IntPtr small, uint count);
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool DestroyIcon(IntPtr icon);
-
         public static ImageSource Load(XboxGame game)
         {
             try
@@ -42,23 +36,18 @@ namespace GHubXBOXProfileFixer
                 }
             }
             catch { /* Fall back to the executable resource. */ }
-            IntPtr large = IntPtr.Zero, small = IntPtr.Zero;
             try
             {
-                // Unlike ExtractAssociatedIcon, this does not substitute Windows' generic EXE icon.
-                if (ExtractIconEx(game.ExecutablePath, 0, out large, out small, 1) == 0) return null;
-                IntPtr handle = large != IntPtr.Zero ? large : small;
-                if (handle == IntPtr.Zero) return null;
-                var image = Imaging.CreateBitmapSourceFromHIcon(handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-                image.Freeze();
-                return image;
+                // Retain the managed fallback used by the earlier working release.
+                using (DrawingIcon icon = DrawingIcon.ExtractAssociatedIcon(game.ExecutablePath))
+                {
+                    if (icon == null) return null;
+                    var image = Imaging.CreateBitmapSourceFromHIcon(icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+                    image.Freeze();
+                    return image;
+                }
             }
             catch { return null; }
-            finally
-            {
-                if (large != IntPtr.Zero) DestroyIcon(large);
-                if (small != IntPtr.Zero && small != large) DestroyIcon(small);
-            }
         }
     }
 }

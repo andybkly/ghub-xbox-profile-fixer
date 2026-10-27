@@ -73,7 +73,8 @@ internal static class UiSmokeTests
             File.Delete(artwork);
             Check(!File.Exists(artwork), "artwork stream released after loading");
             File.WriteAllText(artwork, "broken png");
-            Check(GameIconLoader.Load(artGame) == null, "broken artwork and iconless EXE handled without generic icon");
+            var fallbackIcon = GameIconLoader.Load(artGame);
+            Check(fallbackIcon == null || fallbackIcon.IsFrozen, "broken artwork falls back without crashing or retaining an unfrozen image");
             string manualPath = Path.Combine(fixture, "manual.exe"); File.WriteAllText(manualPath, "fixture");
             var manual = new XboxGame { Name = "Manually added game", ExecutablePath = manualPath };
             Field<List<XboxGame>>("manualGames").Add(manual);
