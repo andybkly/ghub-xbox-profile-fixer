@@ -13,11 +13,11 @@ It does not modify game files. It builds and validates the updated database, the
 
 ### [⬇ Download the latest version (.exe)](https://github.com/andybkly/ghub-xbox-profile-fixer/releases/latest/download/GHubXBOXGamePassProfileFixer.exe)
 
-**[View the latest release, release notes and checksums](https://github.com/andybkly/ghub-xbox-profile-fixer/releases/latest)**
-
 The EXE is built from the public source using GitHub Actions. Tagged release builds generate a SHA-256 checksum and build-provenance attestation.
 
 **Windows security notice:** This application is currently unsigned. Windows SmartScreen or Smart App Control may warn about or block the executable. Smart App Control can prevent unsigned applications from running entirely. The public source code, automated build history and SHA-256 checksums are available for inspection.
+
+**[View the latest release, release notes and checksums](https://github.com/andybkly/ghub-xbox-profile-fixer/releases/latest)**
 
 ## What it does
 
