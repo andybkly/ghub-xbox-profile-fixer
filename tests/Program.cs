@@ -1,6 +1,3 @@
-
-    
-  
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -129,4 +126,117 @@ internal static class RegressionTests
             IntPtr wal = Open(walSource);
             try
             {
-
+                Sql(wal, "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE recent(value TEXT); INSERT INTO recent VALUES('committed');");
+                Check(File.Exists(walSource + "-wal"), "fixture has live WAL data");
+                var walModel = GHubDatabase.Load(walSource); walModel.AddXboxGames(new[] { game });
+                string walOut = Path.Combine(folder, "wal-out.db"); walModel.SaveCopy(walSource, walOut);
+                IntPtr copy = Open(walOut);
+                try { Sql(copy, "CREATE TABLE verify AS SELECT * FROM recent;"); } finally { sqlite3_close(copy); }
+                Check(true, "export includes table committed in WAL");
+                Check(!File.Exists(walOut + "-wal"), "export is standalone");
+            }
+            finally { sqlite3_close(wal); }
+            var applySource = Database("apply", Fixture());
+            byte[] applyBefore = File.ReadAllBytes(applySource);
+            var apply = GHubDatabase.Load(applySource); apply.AddXboxGames(new[] { game });
+            int checks = 0;
+            string backup = apply.ApplyWithBackup(applySource, () => checks++);
+            Check(checks == 2, "G HUB checked before staging and replacing");
+            Check(Path.GetFileName(backup).StartsWith("apply-backup-" + DateTime.Now.ToString("ddMMyyyy")), "backup filename includes local date");
+            Check(applyBefore.SequenceEqual(File.ReadAllBytes(backup)), "backup exactly preserves original settings");
+            Check(GHubDatabase.Load(applySource).RegisteredPaths().Contains(gameExe), "apply installs selected profile in source database");
+            string backup2 = GHubDatabase.Load(applySource).ApplyWithBackup(applySource, () => { });
+            Check(backup != backup2 && File.Exists(backup), "repeat apply preserves earlier backup");
+            byte[] appliedBefore = File.ReadAllBytes(applySource);
+            int backupsBefore = Directory.GetFiles(folder, "apply-backup-*.db").Length;
+            int guards = 0;
+            Throws(() => GHubDatabase.Load(applySource).ApplyWithBackup(applySource, () => { if (++guards == 2) throw new InvalidOperationException("G HUB restarted"); }), "G HUB restarting aborts apply");
+            Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "aborted apply keeps source unchanged");
+            Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "aborted apply creates no misleading backup");
+            Check(!Directory.GetFiles(folder, ".ghub-apply-*").Any(), "aborted apply removes staged files");
+            // Simulate sidecars left by an exited process using a stable copy of an idle WAL DB.
+            string seed = Database("leftover-seed", Fixture());
+            string leftover = Path.Combine(folder, "leftover.db");
+            IntPtr seedHandle = Open(seed);
+            try
+            {
+                Sql(seedHandle, "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE pending(value TEXT); INSERT INTO pending VALUES('preserve me');");
+                File.Copy(seed, leftover);
+                File.Copy(seed + "-wal", leftover + "-wal");
+            }
+            finally { sqlite3_close(seedHandle); }
+            Check(File.Exists(leftover + "-wal"), "leftover WAL fixture exists without an open connection");
+            var leftoverModel = GHubDatabase.Load(leftover); leftoverModel.AddXboxGames(new[] { game });
+            string leftoverBackup = leftoverModel.ApplyWithBackup(leftover, () => { });
+            Check(GHubDatabase.Load(leftover).RegisteredPaths().Contains(gameExe), "apply succeeds with leftover WAL files");
+            foreach (string path in new[] { leftover, leftoverBackup })
+            {
+                IntPtr verify = Open(path);
+                try { Sql(verify, "CREATE TABLE verify_pending AS SELECT * FROM pending WHERE value='preserve me';"); }
+                finally { sqlite3_close(verify); }
+                Check(WinSqlite.IntegrityCheck(path) == "ok", "committed WAL table preserved in " + Path.GetFileName(path));
+            }
+            // A real writer must still block applying; no replacement or backup may appear.
+            var lockedModel = GHubDatabase.Load(applySource);
+            IntPtr writer = Open(applySource);
+            try
+            {
+                Sql(writer, "BEGIN IMMEDIATE");
+                Throws(() => lockedModel.ApplyWithBackup(applySource, () => { }), "active SQLite writer blocks applying");
+                Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "active writer failure leaves settings unchanged");
+                Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "active writer failure creates no backup");
+            }
+            finally { Sql(writer, "ROLLBACK"); sqlite3_close(writer); }
+            string lateSource = Database("late-journal", Fixture());
+            var lateModel = GHubDatabase.Load(lateSource); lateModel.AddXboxGames(new[] { game });
+            int lateChecks = 0;
+            string lateBackup = lateModel.ApplyWithBackup(lateSource, () =>
+            {
+                if (++lateChecks == 2) File.WriteAllBytes(lateSource + "-journal", new byte[0]);
+            });
+            Check(File.Exists(lateBackup) && GHubDatabase.Load(lateSource).RegisteredPaths().Contains(gameExe), "harmless journal appearing during staging does not block apply");
+            var lateLocked = GHubDatabase.Load(applySource);
+            IntPtr lateWriter = IntPtr.Zero;
+            int lateLockChecks = 0;
+            try
+            {
+                Throws(() => lateLocked.ApplyWithBackup(applySource, () =>
+                {
+                    if (++lateLockChecks == 2) { lateWriter = Open(applySource); Sql(lateWriter, "BEGIN IMMEDIATE"); }
+                }), "writer starting after staging blocks replacement");
+                Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "late writer keeps source unchanged");
+                Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "late writer creates no backup");
+            }
+            finally { if (lateWriter != IntPtr.Zero) { Sql(lateWriter, "ROLLBACK"); sqlite3_close(lateWriter); } }
+            var staleApply = GHubDatabase.Load(applySource);
+            WinSqlite.WriteData(applySource, 1, Encoding.UTF8.GetBytes(Json.Serialize(Fixture())));
+            byte[] changedBefore = File.ReadAllBytes(applySource);
+            Throws(() => staleApply.ApplyWithBackup(applySource, () => { }), "stale model cannot overwrite changed settings");
+            Check(changedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "stale apply preserves latest settings");
+            string manifest = Path.Combine(Path.GetDirectoryName(gameExe), "MicrosoftGame.config");
+            File.WriteAllText(manifest, "<Game><ShellVisuals DefaultDisplayName='Example'/><ExecutableList><Executable Name='game.exe' TargetDeviceFamily='PC'/></ExecutableList></Game>");
+            var found = XboxScanner.Scan(new[] { Path.Combine(folder, "games") });
+            Check(found.Count == 1 && found[0].ManifestDetected && found[0].Name == "Example", "manifest executable detected");
+            string assets = Path.Combine(Path.GetDirectoryName(gameExe), "Assets"); Directory.CreateDirectory(assets);
+            string logo = Path.Combine(assets, "Logo.scale-200.png"); File.WriteAllText(logo, "fixture");
+            File.WriteAllText(manifest, "<Game><ShellVisuals Square150x150Logo='Assets/Logo.png'/></Game>");
+            Check(XboxScanner.ArtworkPaths(game).Contains(logo), "manual EXE resolves qualified Xbox artwork from parent manifest");
+            File.WriteAllText(manifest, "<Game><ShellVisuals Square150x150Logo='../../outside.png'/></Game>");
+            Check(!XboxScanner.ArtworkPaths(game).Any(), "artwork paths cannot escape manifest folder");
+            File.WriteAllText(manifest, "<broken");
+            found = XboxScanner.Scan(new[] { Path.Combine(folder, "games", "Test") });
+            Check(found.Count == 1 && !found[0].ManifestDetected, "malformed manifest falls back to executable");
+            File.Delete(manifest);
+            found = XboxScanner.Scan(new[] { Path.Combine(folder, "games", "Test") });
+            Check(found.Count == 1 && found[0].Name == "Test", "direct game folder without manifest scanned once");
+            Console.WriteLine(passed + " regression checks passed.");
+            return 0;
+        }
+        catch (Exception ex) { Console.Error.WriteLine(ex); return 1; }
+        finally
+        {
+            if (args.Contains("--keep")) File.WriteAllText("tests/fixture-path.txt", folder);
+            else try { Directory.Delete(folder, true); } catch { }
+        }
+    }
+}
