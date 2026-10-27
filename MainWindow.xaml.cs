@@ -23,6 +23,8 @@ namespace GHubXBOXProfileFixer
         private readonly ObservableCollection<GameViewModel> games = new ObservableCollection<GameViewModel>();
         private readonly List<string> customRoots = new List<string>();
         private int currentStep = 1;
+        private bool scanning;
+        private readonly List<XboxGame> manualGames = new List<XboxGame>();
 
         public MainWindow()
         {
@@ -32,9 +34,10 @@ namespace GHubXBOXProfileFixer
             if (File.Exists(defaultDb))
             {
                 DatabasePathBox.Text = defaultDb;
-                SetDatabaseReady(true);
+                SetDatabaseReady(false);
             }
             ShowStep(1);
+            UpdateSelectedCount();
         }
 
         private void ShowStep(int step)
@@ -44,12 +47,12 @@ namespace GHubXBOXProfileFixer
             GamesPage.Visibility = step == 2 ? Visibility.Visible : Visibility.Collapsed;
             CreatePage.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
 
-            SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "G Hub database");
-            SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "XBOX games");
-            SetNavState(Step3Nav, Step3NavText, step == 3, false, "3", "Create copy");
+            SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "Database");
+            SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "Game library");
+            SetNavState(Step3Nav, Step3NavText, step == 3, false, "3", "Export");
         }
 
-        private void SetNavState(System.Windows.Controls.Border border, System.Windows.Controls.TextBlock text, bool active, bool complete, string number, string label)
+        private void SetNavState(System.Windows.Controls.Button border, System.Windows.Controls.TextBlock text, bool active, bool complete, string number, string label)
         {
             border.Background = active ? (Brush)FindResource("PaleGreenBrush") : Brushes.Transparent;
             text.Foreground = active || complete ? (Brush)FindResource("GreenBrush") : (Brush)FindResource("InkBrush");
@@ -57,12 +60,12 @@ namespace GHubXBOXProfileFixer
             border.Cursor = Cursors.Hand;
         }
 
-        private void Step1Nav_Click(object sender, System.Windows.Input.MouseButtonEventArgs e) => ShowStep(1);
-        private void Step2Nav_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Step1Nav_Click(object sender, RoutedEventArgs e) => ShowStep(1);
+        private void Step2Nav_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(DatabasePathBox.Text)) ShowStep(2);
+            DatabaseContinue_Click(sender, e);
         }
-        private void Step3Nav_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Step3Nav_Click(object sender, RoutedEventArgs e)
         {
             if (games.Any(g => g.Selected && g.CanSelect)) PrepareCreatePage();
         }
@@ -79,25 +82,28 @@ namespace GHubXBOXProfileFixer
             if (dialog.ShowDialog(this) == true)
             {
                 DatabasePathBox.Text = dialog.FileName;
-                SetDatabaseReady(true);
+                SetDatabaseReady(false);
             }
         }
 
         private void SetDatabaseReady(bool ready)
         {
-            DatabaseStatusText.Text = ready ? "✓  Ready" : "Select your settings.db";
+            DatabaseStatusText.Text = ready ? "Validated G HUB database" : "Close G HUB, then continue to validate this file.";
             DatabaseStatusText.Foreground = ready ? (Brush)FindResource("GreenBrush") : (Brush)FindResource("MutedBrush");
         }
 
         private async void DatabaseContinue_Click(object sender, RoutedEventArgs e)
         {
+            if (scanning) return;
+            if (!ValidateSource()) return;
             if (!File.Exists(DatabasePathBox.Text))
             {
                 ShowError("Select a valid LGHUB settings.db first.");
                 return;
             }
-            try { GHubDatabase.Load(DatabasePathBox.Text); }
+            try { RefreshRegistration(); }
             catch (Exception ex) { ShowError("That file is not a valid G Hub database.\n\n" + ex.Message); return; }
+            SetDatabaseReady(true);
             DatabasePathSummary.Text = DatabasePathBox.Text;
             ShowStep(2);
             if (games.Count == 0) await ScanGames();
@@ -108,41 +114,85 @@ namespace GHubXBOXProfileFixer
 
         private async Task ScanGames()
         {
-            ScanSummaryText.Text = "Scanning XBOX game folders…";
+            if (scanning || !ValidateSource()) return;
+            scanning = true;
+            Workspace.IsEnabled = false;
+            ScanSummaryText.Text = "Scanning game folders…";
             try
             {
-                var roots = XboxScanner.FindXboxRoots().Concat(customRoots).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-                var found = await Task.Run(() => XboxScanner.Scan(roots));
-                var database = GHubDatabase.Load(DatabasePathBox.Text);
+                string databasePath = DatabasePathBox.Text;
+                var extraRoots = customRoots.ToList();
+                var previous = games.ToDictionary(g => Normalize(g.ExecutablePath), g => g.Selected, StringComparer.OrdinalIgnoreCase);
+                var found = await Task.Run(() => XboxScanner.Scan(XboxScanner.FindXboxRoots().Concat(extraRoots)));
+                var database = GHubDatabase.Load(databasePath);
                 HashSet<string> registered = database.RegisteredPaths();
+                var merged = found.Concat(manualGames).GroupBy(g => Normalize(g.ExecutablePath), StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First()).OrderBy(g => g.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
                 games.Clear();
-                foreach (XboxGame game in found)
+                foreach (XboxGame game in merged)
                 {
                     game.AlreadyRegistered = registered.Contains(Normalize(game.ExecutablePath));
-                    games.Add(new GameViewModel(game, LoadIcon(game.ExecutablePath)));
+                    var model = new GameViewModel(game, LoadIcon(game.ExecutablePath));
+                    bool selected;
+                    if (previous.TryGetValue(Normalize(game.ExecutablePath), out selected)) model.Selected = selected && model.CanSelect;
+                    games.Add(model);
                 }
-                ScanSummaryText.Text = found.Count == 0 ? "No XBOX games found" : found.Count + (found.Count == 1 ? " game found" : " games found");
+                ScanSummaryText.Text = games.Count + (games.Count == 1 ? " game found" : " games found");
+            }
+            catch (Exception ex)
+            {
+                ScanSummaryText.Text = "Scan failed — try again";
+                ShowError("The game scan failed.\n\n" + ex.Message);
+            }
+            finally
+            {
+                scanning = false;
+                Workspace.IsEnabled = true;
                 UpdateSelectedCount();
             }
-            catch (Exception ex) { ShowError("The XBOX game scan failed.\n\n" + ex.Message); }
         }
 
-        private void AddFolder_Click(object sender, RoutedEventArgs e)
+        private void RefreshRegistration()
+        {
+            var registered = GHubDatabase.Load(DatabasePathBox.Text).RegisteredPaths();
+            foreach (var game in games) game.SetRegistered(registered.Contains(Normalize(game.ExecutablePath)));
+            UpdateSelectedCount();
+        }
+
+        private void DatabasePathChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (!IsInitialized) return;
+            SetDatabaseReady(false);
+            games.Clear();
+            manualGames.Clear();
+            UpdateSelectedCount();
+        }
+
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            bool select = games.Any(g => g.CanSelect && !g.Selected);
+            foreach (var game in games.Where(g => g.CanSelect)) game.Selected = select;
+            UpdateSelectedCount();
+        }
+
+        private async void AddFolder_Click(object sender, RoutedEventArgs e)
         {
             using (var dialog = new Forms.FolderBrowserDialog { Description = "Select an XboxGames folder, game folder, or Content folder" })
             {
                 if (dialog.ShowDialog() != Forms.DialogResult.OK) return;
                 if (!customRoots.Contains(dialog.SelectedPath, StringComparer.OrdinalIgnoreCase)) customRoots.Add(dialog.SelectedPath);
             }
-            ScanSummaryText.Text = "Folder added — scan again";
+            await ScanGames();
         }
 
         private void AddExecutable_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog { Title = "Select the game's main executable", Filter = "Applications (*.exe)|*.exe" };
             if (dialog.ShowDialog(this) != true) return;
-            bool alreadyRegistered = false;
-            try { alreadyRegistered = GHubDatabase.Load(DatabasePathBox.Text).RegisteredPaths().Contains(Normalize(dialog.FileName)); } catch { }
+            if (games.Any(g => String.Equals(Normalize(g.ExecutablePath), Normalize(dialog.FileName), StringComparison.OrdinalIgnoreCase))) return;
+            bool alreadyRegistered;
+            try { alreadyRegistered = GHubDatabase.Load(DatabasePathBox.Text).RegisteredPaths().Contains(Normalize(dialog.FileName)); }
+            catch (Exception ex) { ShowError("Could not read the database.\n\n" + ex.Message); return; }
             var game = new XboxGame
             {
                 Name = Path.GetFileNameWithoutExtension(dialog.FileName),
@@ -151,6 +201,7 @@ namespace GHubXBOXProfileFixer
                 ManifestDetected = false,
                 AlreadyRegistered = alreadyRegistered
             };
+            manualGames.Add(game);
             games.Add(new GameViewModel(game, LoadIcon(game.ExecutablePath)));
             ScanSummaryText.Text = games.Count + (games.Count == 1 ? " game found" : " games found");
             UpdateSelectedCount();
@@ -177,6 +228,8 @@ namespace GHubXBOXProfileFixer
         {
             int count = games.Count(g => g.Selected && g.CanSelect);
             SelectedCountText.Text = count + (count == 1 ? " game selected" : " games selected");
+            GamesContinueButton.IsEnabled = count > 0 && !scanning;
+            EmptyState.Visibility = games.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void GamesContinue_Click(object sender, RoutedEventArgs e)
@@ -213,6 +266,7 @@ namespace GHubXBOXProfileFixer
                 FileName = "settings-XBOX-profiles-fixed.db"
             };
             if (save.ShowDialog(this) != true) return;
+            if (!ValidateSource()) return;
             try
             {
                 var database = GHubDatabase.Load(DatabasePathBox.Text);
@@ -241,7 +295,13 @@ namespace GHubXBOXProfileFixer
         private static bool IsGHubRunning()
         {
             string[] names = { "lghub", "lghub_agent", "lghub_system_tray" };
-            return names.Any(name => Process.GetProcessesByName(name).Length > 0);
+            foreach (string name in names)
+            {
+                var processes = Process.GetProcessesByName(name);
+                try { if (processes.Length > 0) return true; }
+                finally { foreach (var process in processes) process.Dispose(); }
+            }
+            return false;
         }
 
         private static string Normalize(string path)
@@ -262,8 +322,9 @@ namespace GHubXBOXProfileFixer
         public string ExecutablePath => Game.ExecutablePath;
         public ImageSource Icon { get; }
         public bool CanSelect => !Game.AlreadyRegistered;
+        public string Detection => Game.ManifestDetected ? "From manifest" : "Check executable";
         public string Status => Game.AlreadyRegistered ? "Already added" : "Missing from G Hub";
-        public Brush StatusBrush => Game.AlreadyRegistered ? new SolidColorBrush(Color.FromRgb(102, 106, 102)) : new SolidColorBrush(Color.FromRgb(47, 143, 91));
+        public Brush StatusBrush => Game.AlreadyRegistered ? new SolidColorBrush(Color.FromRgb(157, 170, 185)) : new SolidColorBrush(Color.FromRgb(131, 225, 181));
         public bool Selected
         {
             get => selected;
@@ -275,6 +336,15 @@ namespace GHubXBOXProfileFixer
             Game = game;
             Icon = icon;
             selected = !game.AlreadyRegistered;
+        }
+
+        public void SetRegistered(bool registered)
+        {
+            Game.AlreadyRegistered = registered;
+            if (registered) Selected = false;
+            OnPropertyChanged(nameof(CanSelect));
+            OnPropertyChanged(nameof(Status));
+            OnPropertyChanged(nameof(StatusBrush));
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

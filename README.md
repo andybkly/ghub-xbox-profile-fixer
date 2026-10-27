@@ -52,11 +52,11 @@ The utility checks for running G Hub processes and refuses to create a database 
 
 1. Open the utility.
 2. Select `%LOCALAPPDATA%\LGHUB\settings.db` if it was not found automatically.
-3. Continue to **XBOX games**.
+3. Continue to **Game library**.
 4. Scan for installed games.
 5. Review the executable path for each result.
 6. Select the missing games you want to add.
-7. Continue to **Create copy** and save the fixed database.
+7. Choose **Review selection**, then **Export profiles** to save the fixed database.
 
 If a game is not detected automatically, use **Add folder** or **Add executable**.
 
@@ -122,3 +122,9 @@ Compare it with `GHubXBOXGamePassProfileFixer.exe.sha256` attached to the same r
 ## Licence
 
 [MIT](LICENSE)
+
+## Development checks
+
+The Windows Actions build runs database/scanner regression checks and WPF UI smoke checks before packaging the executable. Synthetic fixtures cover duplicate additions, card links, absent lighting references, changed input, WAL snapshots, failed-export preservation, malformed manifests and direct game folders. UI checks cover retained manual entries, retained deselections, database changes and button states, and capture screenshots at normal and minimum window sizes.
+
+These checks do not establish compatibility with every G HUB version or actual game profile switching. Test the generated database with G HUB on Windows before release.

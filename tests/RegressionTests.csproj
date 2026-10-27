@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><OutputType>Exe</OutputType><TargetFramework>net48</TargetFramework><LangVersion>latest</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Program.cs" /><Reference Include="System.Web" /><Reference Include="System.Web.Extensions" />
+    <Compile Include="../GHubDatabase.cs" Link="GHubDatabase.cs" />
+    <Compile Include="../WinSqlite.cs" Link="WinSqlite.cs" />
+    <Compile Include="../XboxScanner.cs" Link="XboxScanner.cs" />
+  </ItemGroup>
+</Project>

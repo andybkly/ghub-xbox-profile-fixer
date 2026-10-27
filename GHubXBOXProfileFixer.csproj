@@ -25,6 +25,7 @@
   <ItemGroup>
     <!-- Ignore files left behind when upgrading from the original WinForms UI. -->
     <Compile Remove="Program.cs" />
+    <Compile Remove="tests/**/*.cs" />
     <Compile Remove="MainForm.cs" />
   </ItemGroup>
 </Project>

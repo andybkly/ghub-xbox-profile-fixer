@@ -1,25 +1,25 @@
 <Window x:Class="GHubXBOXProfileFixer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="G Hub XBOX Profile Fixer (Unofficial)"
-        Width="1100" Height="760" MinWidth="960" MinHeight="650"
+        Title="G HUB · Xbox Profile Fixer"
+        Width="1180" Height="800" MinWidth="1040" MinHeight="700"
         WindowStartupLocation="CenterScreen" Background="{StaticResource CanvasBrush}"
         FontFamily="Segoe UI" UseLayoutRounding="True" SnapsToDevicePixels="True">
-    <Grid>
+    <Grid x:Name="Workspace">
         <Grid.RowDefinitions>
             <RowDefinition Height="64" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="26,0">
                 <Border Width="30" Height="30" CornerRadius="8" Background="{StaticResource PaleGreenBrush}" Margin="0,0,12,0">
-                    <TextBlock Text="↗" Foreground="{StaticResource GreenBrush}" FontFamily="Segoe UI Semibold"
+                    <TextBlock Text="G" Foreground="{StaticResource GreenBrush}" FontFamily="Segoe UI Semibold"
                                FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
-                <TextBlock Text="G Hub XBOX Profile Fixer" FontFamily="Segoe UI Semibold" FontSize="18" VerticalAlignment="Center" />
-                <Border Background="#F1F2F0" CornerRadius="5" Padding="9,4" Margin="12,0,0,0">
-                    <TextBlock Text="Unofficial" Foreground="{StaticResource MutedBrush}" FontSize="12" />
+                <TextBlock Text="G HUB / Xbox Profile Fixer" FontFamily="Segoe UI Semibold" FontSize="18" VerticalAlignment="Center" />
+                <Border Background="#252F3A" CornerRadius="5" Padding="9,4" Margin="12,0,0,0">
+                    <TextBlock Text="COMMUNITY TOOL" Foreground="{StaticResource MutedBrush}" FontSize="12" />
                 </Border>
             </StackPanel>
         </Border>
@@ -30,17 +30,18 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
-                <StackPanel Margin="16,38">
-                    <Border x:Name="Step1Nav" CornerRadius="8" Padding="16,15" Margin="0,0,0,8" MouseLeftButtonUp="Step1Nav_Click">
+            <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+                <StackPanel Margin="16,32">
+                    <TextBlock Text="SETUP" Foreground="{StaticResource MutedBrush}" FontSize="11" FontWeight="SemiBold" Margin="16,0,0,20" />
+                    <Button x:Name="Step1Nav" Style="{StaticResource SecondaryButton}" HorizontalContentAlignment="Left" Padding="16,15" Margin="0,0,0,8" Click="Step1Nav_Click">
                         <TextBlock x:Name="Step1NavText" Text="1     G Hub database" FontFamily="Segoe UI Semibold" FontSize="14" />
-                    </Border>
-                    <Border x:Name="Step2Nav" CornerRadius="8" Padding="16,15" Margin="0,0,0,8" MouseLeftButtonUp="Step2Nav_Click">
+                    </Button>
+                    <Button x:Name="Step2Nav" Style="{StaticResource SecondaryButton}" HorizontalContentAlignment="Left" Padding="16,15" Margin="0,0,0,8" Click="Step2Nav_Click">
                         <TextBlock x:Name="Step2NavText" Text="2     XBOX games" FontFamily="Segoe UI Semibold" FontSize="14" />
-                    </Border>
-                    <Border x:Name="Step3Nav" CornerRadius="8" Padding="16,15" MouseLeftButtonUp="Step3Nav_Click">
+                    </Button>
+                    <Button x:Name="Step3Nav" Style="{StaticResource SecondaryButton}" HorizontalContentAlignment="Left" Padding="16,15" Click="Step3Nav_Click">
                         <TextBlock x:Name="Step3NavText" Text="3     Create copy" FontFamily="Segoe UI Semibold" FontSize="14" />
-                    </Border>
+                    </Button>
                 </StackPanel>
             </Border>
 
@@ -55,26 +56,26 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="G Hub database" FontFamily="Segoe UI Semibold" FontSize="32" />
-                        <TextBlock Text="Select the G Hub settings database you want to create a fixed copy from."
+                        <TextBlock Text="Connect G HUB" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Choose your settings file to find games missing from G HUB." TextWrapping="Wrap"
                                    Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
 
-                    <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
+                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
-                            <TextBlock Text="LGHUB settings.db" FontFamily="Segoe UI Semibold" FontSize="16" />
+                            <TextBlock Text="G HUB settings file" FontFamily="Segoe UI Semibold" FontSize="16" />
                             <Grid Grid.Row="1" Margin="0,12,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="DatabasePathBox" Height="40" FontSize="14" VerticalContentAlignment="Center"
-                                         Padding="11,0" BorderBrush="#C8CBC8" BorderThickness="1" />
+                                <TextBox x:Name="DatabasePathBox" TextChanged="DatabasePathChanged" AutomationProperties.Name="G HUB database path" Height="40" FontSize="14" VerticalContentAlignment="Center"
+                                         Padding="11,0" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" />
                                 <Button Grid.Column="1" Content="Browse" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0" Click="BrowseDatabase_Click" />
                             </Grid>
                             <TextBlock x:Name="DatabaseStatusText" Grid.Row="2" Text="Select your settings.db"
@@ -82,7 +83,7 @@
                         </Grid>
                     </Border>
 
-                    <TextBlock Grid.Row="2" Text="◇  Your original database will only be read. The app always creates a separate copy."
+                    <TextBlock Grid.Row="2" Text="A separate copy is created. Your original settings and assignments are kept." TextWrapping="Wrap"
                                Foreground="{StaticResource MutedBrush}" FontSize="13" Margin="4,18,0,0" />
                     <Button Grid.Row="4" Content="Continue" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"
                             Width="150" Click="DatabaseContinue_Click" />
@@ -98,11 +99,11 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,18">
-                        <TextBlock Text="XBOX games" FontFamily="Segoe UI Semibold" FontSize="32" />
-                        <TextBlock Text="Select the games you want to add to G Hub." Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
+                        <TextBlock Text="Your game library" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Choose the games that need a profile. Check suggested executables before exporting." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
 
-                    <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="18,14">
+                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="18,14">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -118,22 +119,29 @@
                         </Grid>
                     </Border>
 
-                    <Grid Grid.Row="2" Margin="0,14,0,10">
+                    <Grid Grid.Row="2" Margin="0,18,0,14">
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Button Content="↻  Scan again" Style="{StaticResource SecondaryButton}" Click="ScanAgain_Click" />
+                        <Button Content="Scan library" Style="{StaticResource SecondaryButton}" Click="ScanAgain_Click" />
                         <Button Grid.Column="1" Content="Add folder" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Click="AddFolder_Click" />
-                        <Button Grid.Column="2" Content="Add executable" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Click="AddExecutable_Click" />
-                        <TextBlock x:Name="ScanSummaryText" Grid.Column="3" Text="Not scanned yet" Foreground="{StaticResource MutedBrush}"
-                                   VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        <Button Grid.Column="2" Content="Add .exe" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Click="AddExecutable_Click" />
+                        <Button Grid.Column="3" Content="Select / clear all" HorizontalAlignment="Right" Style="{StaticResource SecondaryButton}" Click="SelectAll_Click" />
+                        <TextBlock x:Name="ScanSummaryText" Grid.Row="1" Grid.ColumnSpan="4" Margin="0,10,0,0" Text="Not scanned yet" Foreground="{StaticResource MutedBrush}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </Grid>
 
-                    <Border Grid.Row="3" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10">
+                        <Grid>
+                        <StackPanel x:Name="EmptyState" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
+                            <TextBlock Text="Find your installed games" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                            <TextBlock Text="Scan your library, choose a folder or add a game executable." Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" TextAlignment="Center" Margin="0,8,0,0" />
+                        </StackPanel>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl x:Name="GamesItemsControl">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -146,23 +154,26 @@
                                                     <ColumnDefinition Width="150" />
                                                 </Grid.ColumnDefinitions>
                                                 <CheckBox IsChecked="{Binding Selected}" IsEnabled="{Binding CanSelect}" VerticalAlignment="Center"
-                                                          Click="GameCheckBox_Click" />
-                                                <Border Grid.Column="1" Width="38" Height="38" CornerRadius="7" Background="#F1F2F0" VerticalAlignment="Center">
+                                                          Click="GameCheckBox_Click" AutomationProperties.Name="{Binding Name}" />
+                                                <Border Grid.Column="1" Width="38" Height="38" CornerRadius="7" Background="#252F3A" VerticalAlignment="Center">
                                                     <Image Source="{Binding Icon}" Width="34" Height="34" Stretch="Uniform" />
                                                 </Border>
                                                 <StackPanel Grid.Column="2" Margin="12,0,18,0" VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding Name}" FontFamily="Segoe UI Semibold" FontSize="15" />
-                                                    <TextBlock Text="{Binding ExecutablePath}" Foreground="{StaticResource MutedBrush}" FontSize="12"
+                                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" FontFamily="Segoe UI Semibold" FontSize="15" />
+                                                    <TextBlock Text="{Binding ExecutablePath}" ToolTip="{Binding ExecutablePath}" Foreground="{StaticResource MutedBrush}" FontSize="12"
                                                                TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                                                 </StackPanel>
-                                                <TextBlock Grid.Column="3" Text="{Binding Status}" Foreground="{Binding StatusBrush}"
-                                                           VerticalAlignment="Center" HorizontalAlignment="Right" FontSize="13" />
+                                                <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                                    <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" FontSize="13" HorizontalAlignment="Right" />
+                                                    <TextBlock Text="{Binding Detection}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Right" />
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
                         </ScrollViewer>
+                        </Grid>
                     </Border>
 
                     <Grid Grid.Row="4" Margin="0,18,0,0">
@@ -172,9 +183,8 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock x:Name="SelectedCountText" Text="0 games selected" FontFamily="Segoe UI Semibold" FontSize="14" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="◇  Your original database will not be changed." Foreground="{StaticResource MutedBrush}"
-                                   VerticalAlignment="Center" Margin="26,0,0,0" />
-                        <Button Grid.Column="2" Content="Continue" Style="{StaticResource PrimaryButton}" Width="150" Click="GamesContinue_Click" />
+
+                        <Button x:Name="GamesContinueButton" Grid.Column="2" Content="Review selection" Style="{StaticResource PrimaryButton}" Width="180" Click="GamesContinue_Click" />
                     </Grid>
                 </Grid>
 
@@ -187,21 +197,22 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="Create fixed copy" FontFamily="Segoe UI Semibold" FontSize="32" />
-                        <TextBlock Text="Review the selection, then create a new G Hub database." Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
+                        <TextBlock Text="Ready to export" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Export a separate settings file with profiles for your selected games." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
-                    <Border Grid.Row="1" Background="White" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
-                        <StackPanel>
+                    <Border Grid.Row="1" MaxHeight="300" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
+                            <TextBlock Text="EXPORT SUMMARY" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,14" />
                             <TextBlock x:Name="CreateCountText" FontFamily="Segoe UI Semibold" FontSize="18" />
                             <TextBlock x:Name="CreateNamesText" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                             <TextBlock x:Name="CreateSourceText" Foreground="{StaticResource MutedBrush}" Margin="0,16,0,0" TextTrimming="CharacterEllipsis" />
-                        </StackPanel>
+                        </StackPanel></ScrollViewer>
                     </Border>
-                    <TextBlock Grid.Row="2" Text="✓  The source database remains untouched. The new copy must pass all validation checks."
+                    <TextBlock Grid.Row="2" Text="The export is checked before saving. Close G HUB and back up settings.db before installing it." TextWrapping="Wrap"
                                Foreground="{StaticResource GreenBrush}" Margin="4,18,0,0" />
                     <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="Back" Style="{StaticResource SecondaryButton}" Width="100" Margin="0,0,10,0" Click="BackToGames_Click" />
-                        <Button Content="Create fixed database" Style="{StaticResource PrimaryButton}" Width="210" Click="CreateDatabase_Click" />
+                        <Button Content="Export profiles" Style="{StaticResource PrimaryButton}" Width="210" Click="CreateDatabase_Click" />
                     </StackPanel>
                 </Grid>
             </Grid>

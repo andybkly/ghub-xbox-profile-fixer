@@ -3,56 +3,83 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="CanvasBrush" Color="#F7F7F5" />
-        <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF" />
-        <SolidColorBrush x:Key="InkBrush" Color="#171817" />
-        <SolidColorBrush x:Key="MutedBrush" Color="#666A66" />
-        <SolidColorBrush x:Key="BorderBrush" Color="#E3E5E2" />
-        <SolidColorBrush x:Key="GreenBrush" Color="#2F8F5B" />
-        <SolidColorBrush x:Key="PaleGreenBrush" Color="#EDF6F0" />
-
+        <SolidColorBrush x:Key="CanvasBrush" Color="#101419" />
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#191F27" />
+        <SolidColorBrush x:Key="InkBrush" Color="#F0F3F6" />
+        <SolidColorBrush x:Key="MutedBrush" Color="#A1ADBC" />
+        <SolidColorBrush x:Key="BorderBrush" Color="#303A46" />
+        <SolidColorBrush x:Key="GreenBrush" Color="#83E1B5" />
+        <SolidColorBrush x:Key="PaleGreenBrush" Color="#203B32" />
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI" />
             <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
         </Style>
-
-        <Style x:Key="PrimaryButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource GreenBrush}" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="24,11" />
-            <Setter Property="FontFamily" Value="Segoe UI Semibold" />
-            <Setter Property="FontSize" Value="15" />
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#101419" />
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+            <Setter Property="CaretBrush" Value="{StaticResource GreenBrush}" />
+            <Setter Property="SelectionBrush" Value="#356851" />
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Box" Width="20" Height="20" CornerRadius="4" Background="#101419" BorderBrush="#667384" BorderThickness="1">
+                            <TextBlock x:Name="Tick" Text="✓" Foreground="#101419" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" />
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource GreenBrush}" />
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource GreenBrush}" />
+                                <Setter TargetName="Tick" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="White" />
+                                <Setter TargetName="Box" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.4" /></Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
-
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="White" />
+            <Setter Property="Background" Value="#222B35" />
             <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
-            <Setter Property="BorderBrush" Value="#C8CBC8" />
+            <Setter Property="BorderBrush" Value="#3C4958" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="Padding" Value="16,9" />
-            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="16,11" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="13" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border x:Name="Chrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="Center" />
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.85" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.65" /></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="Chrome" Property="BorderBrush" Value="White" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.35" /></Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Background" Value="{StaticResource GreenBrush}" />
+            <Setter Property="Foreground" Value="#10251B" />
+            <Setter Property="BorderBrush" Value="{StaticResource GreenBrush}" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Padding" Value="24,12" />
         </Style>
     </Application.Resources>
 </Application>

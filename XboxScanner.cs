@@ -20,7 +20,7 @@ namespace GHubXBOXProfileFixer
     {
         private static readonly string[] ExcludedNameParts =
         {
-            "unins", "crash", "report", "helper", "launcher", "setup", "install", "eac", "easyanticheat",
+            "unins", "crash", "report", "helper", "launcher", "setup", "install", "easyanticheat",
             "beservice", "battleye", "vc_redist", "dxsetup", "unitycrashhandler"
         };
 
@@ -83,7 +83,9 @@ namespace GHubXBOXProfileFixer
         private static IEnumerable<string> ResolveGameFolders(string root)
         {
             if (File.Exists(Path.Combine(root, "MicrosoftGame.config")) ||
-                File.Exists(Path.Combine(root, "Content", "MicrosoftGame.config")))
+                File.Exists(Path.Combine(root, "Content", "MicrosoftGame.config")) ||
+                Directory.Exists(Path.Combine(root, "Content")) ||
+                SafeFiles(root, "*.exe", 0).Any())
             {
                 yield return root;
                 yield break;
@@ -106,8 +108,12 @@ namespace GHubXBOXProfileFixer
             string manifest = SafeFiles(content, "MicrosoftGame.config", 3).FirstOrDefault();
             if (manifest != null)
             {
-                var fromManifest = ParseManifest(gameFolder, content, manifest).ToList();
-                if (fromManifest.Count > 0) return fromManifest;
+                try
+                {
+                    var fromManifest = ParseManifest(gameFolder, content, manifest).ToList();
+                    if (fromManifest.Count > 0) return fromManifest;
+                }
+                catch (System.Xml.XmlException) { /* A damaged manifest can still have a usable executable. */ }
             }
             string fallback = ChooseFallbackExecutable(content, gameFolder);
             if (fallback == null) return Enumerable.Empty<XboxGame>();

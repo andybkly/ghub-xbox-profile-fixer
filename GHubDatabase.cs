@@ -11,13 +11,15 @@ namespace GHubXBOXProfileFixer
     {
         private readonly JavaScriptSerializer serializer;
         private readonly long rowId;
+        private readonly byte[] originalData;
         private readonly Dictionary<string, object> root;
 
-        private GHubDatabase(Dictionary<string, object> root, long rowId, JavaScriptSerializer serializer)
+        private GHubDatabase(Dictionary<string, object> root, long rowId, JavaScriptSerializer serializer, byte[] originalData)
         {
             this.root = root;
             this.rowId = rowId;
             this.serializer = serializer;
+            this.originalData = originalData;
             ValidateShape();
         }
 
@@ -28,7 +30,7 @@ namespace GHubXBOXProfileFixer
             var serializer = new JavaScriptSerializer { MaxJsonLength = int.MaxValue, RecursionLimit = 500 };
             var root = serializer.DeserializeObject(Encoding.UTF8.GetString(bytes)) as Dictionary<string, object>;
             if (root == null) throw new InvalidDataException("The LGHUB data is not a JSON object.");
-            return new GHubDatabase(root, id, serializer);
+            return new GHubDatabase(root, id, serializer, bytes);
         }
 
         private void ValidateShape()
@@ -101,7 +103,10 @@ namespace GHubXBOXProfileFixer
 
         public int AddXboxGames(IEnumerable<XboxGame> selectedGames)
         {
-            var games = selectedGames.GroupBy(g => Normalize(g.ExecutablePath), StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
+            var candidates = selectedGames.ToList();
+            if (candidates.Any(g => g == null || String.IsNullOrWhiteSpace(g.ExecutablePath) || !File.Exists(g.ExecutablePath)))
+                throw new InvalidDataException("A selected executable no longer exists. Scan again before creating a copy.");
+            var games = candidates.GroupBy(g => Normalize(g.ExecutablePath), StringComparer.OrdinalIgnoreCase).Select(g => g.First()).ToList();
             var existing = RegisteredPaths();
             var desktopApp = Applications.Select(Dict).FirstOrDefault(a => Text(a, "name") == "APPLICATION_NAME_DESKTOP");
             if (desktopApp == null) throw new InvalidDataException("The LGHUB Desktop application record was not found.");
@@ -161,8 +166,11 @@ namespace GHubXBOXProfileFixer
                     if (id != null) refs.Add(id);
                 }
             }
-            string lighting = Text(profile, "lightingCard");
-            if (lighting != null) refs.Add(lighting);
+            foreach (string key in new[] { "lightingCard", "syncLightingCard" })
+            {
+                string lighting = Text(profile, key);
+                if (lighting != null) refs.Add(lighting);
+            }
             return refs;
         }
 
@@ -191,9 +199,11 @@ namespace GHubXBOXProfileFixer
                     if (oldId != null && replacements.TryGetValue(oldId, out newId)) assignment["cardId"] = newId;
                 }
             }
-            string oldLighting = Text(profile, "lightingCard"), newLighting;
-            profile["lightingCard"] = oldLighting != null && replacements.TryGetValue(oldLighting, out newLighting) ? newLighting : oldLighting ?? Guid.NewGuid().ToString();
-            profile["syncLightingCard"] = Guid.NewGuid().ToString();
+            foreach (string key in new[] { "lightingCard", "syncLightingCard" })
+            {
+                string oldId = Text(profile, key), newId;
+                if (oldId != null && replacements.TryGetValue(oldId, out newId)) profile[key] = newId;
+            }
         }
 
         private Dictionary<string, object> DeepClone(Dictionary<string, object> source)
@@ -217,20 +227,33 @@ namespace GHubXBOXProfileFixer
         {
             if (String.Equals(Path.GetFullPath(sourcePath), Path.GetFullPath(destinationPath), StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Choose a different filename. The original settings.db will not be overwritten.");
-            File.Copy(sourcePath, destinationPath, true);
+            // Build beside the destination, then publish only a fully validated file.
+            // SQLite backup includes committed WAL data, unlike File.Copy.
+            string destination = Path.GetFullPath(destinationPath);
+            if (File.Exists(destination + "-wal") || File.Exists(destination + "-shm") || File.Exists(destination + "-journal"))
+                throw new IOException("The output has SQLite sidecar files. Choose a new filename.");
+            ValidateRelationships();
+            string temporary = Path.Combine(Path.GetDirectoryName(destination), ".ghub-" + Guid.NewGuid().ToString("N") + ".db");
             try
             {
+                WinSqlite.Backup(sourcePath, temporary);
+                long snapshotId;
+                byte[] snapshotData = WinSqlite.ReadData(temporary, out snapshotId);
+                if (snapshotId != rowId || !snapshotData.SequenceEqual(originalData))
+                    throw new IOException("The source database changed. Reload it and try again.");
                 byte[] bytes = Encoding.UTF8.GetBytes(serializer.Serialize(root));
-                WinSqlite.WriteData(destinationPath, rowId, bytes);
-                string integrity = WinSqlite.IntegrityCheck(destinationPath);
+                WinSqlite.WriteData(temporary, rowId, bytes);
+                string integrity = WinSqlite.IntegrityCheck(temporary);
                 if (!String.Equals(integrity, "ok", StringComparison.OrdinalIgnoreCase))
                     throw new InvalidDataException("The converted database failed SQLite validation: " + integrity);
-                ValidateRelationships();
+                GHubDatabase.Load(temporary).ValidateRelationships();
+                if (File.Exists(destination)) File.Replace(temporary, destination, null);
+                else File.Move(temporary, destination);
             }
-            catch
+            finally
             {
-                try { File.Delete(destinationPath); } catch { }
-                throw;
+                foreach (string suffix in new[] { "", "-wal", "-shm", "-journal" })
+                    try { File.Delete(temporary + suffix); } catch { }
             }
         }
 

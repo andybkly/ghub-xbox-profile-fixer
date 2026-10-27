@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace GHubXBOXProfileFixer
 {
@@ -23,6 +24,40 @@ namespace GHubXBOXProfileFixer
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int sqlite3_bind_blob(IntPtr stmt, int index, byte[] value, int bytes, IntPtr destructor);
         [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int sqlite3_bind_int64(IntPtr stmt, int index, long value);
 
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int sqlite3_changes(IntPtr db);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern IntPtr sqlite3_backup_init(IntPtr destination, byte[] destinationName, IntPtr source, byte[] sourceName);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int sqlite3_backup_step(IntPtr backup, int pages);
+        [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] private static extern int sqlite3_backup_finish(IntPtr backup);
+
+        public static void Backup(string sourcePath, string destinationPath)
+        {
+            IntPtr source = Open(sourcePath, OpenReadOnly), destination = IntPtr.Zero, backup = IntPtr.Zero;
+            try
+            {
+                destination = Open(destinationPath, OpenReadWrite | 4);
+                backup = sqlite3_backup_init(destination, Utf8("main"), source, Utf8("main"));
+                if (backup == IntPtr.Zero) throw new InvalidOperationException("Could not snapshot database: " + Error(destination));
+                int result;
+                int retries = 0;
+                do
+                {
+                    result = sqlite3_backup_step(backup, -1);
+                    if (result == 5 || result == 6) Thread.Sleep(50);
+                } while ((result == 5 || result == 6) && ++retries < 20);
+                int finish = sqlite3_backup_finish(backup);
+                backup = IntPtr.Zero;
+                if (result != Done || finish != Ok) throw new InvalidOperationException("Could not snapshot database: " + Error(destination));
+                // Make the exported database standalone before publishing it.
+                Execute(destination, "PRAGMA journal_mode=DELETE");
+            }
+            finally
+            {
+                if (backup != IntPtr.Zero) sqlite3_backup_finish(backup);
+                if (destination != IntPtr.Zero) sqlite3_close(destination);
+                sqlite3_close(source);
+            }
+        }
+
         private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value + "\0");
         private static string Error(IntPtr db) => Marshal.PtrToStringAnsi(sqlite3_errmsg(db));
 
@@ -30,7 +65,12 @@ namespace GHubXBOXProfileFixer
         {
             IntPtr db;
             int rc = sqlite3_open_v2(Utf8(path), out db, flags, IntPtr.Zero);
-            if (rc != Ok) throw new InvalidOperationException("Could not open database: " + Error(db));
+            if (rc != Ok)
+            {
+                string error = db == IntPtr.Zero ? "SQLite could not allocate a handle." : Error(db);
+                if (db != IntPtr.Zero) sqlite3_close(db);
+                throw new InvalidOperationException("Could not open database: " + error);
+            }
             return db;
         }
 
@@ -72,6 +112,7 @@ namespace GHubXBOXProfileFixer
                 if (sqlite3_bind_blob(statement, 1, data, data.Length, Transient) != Ok || sqlite3_bind_int64(statement, 2, id) != Ok)
                     throw new InvalidOperationException("Could not bind converted data: " + Error(db));
                 if (sqlite3_step(statement) != Done) throw new InvalidOperationException("Could not update database: " + Error(db));
+                if (sqlite3_changes(db) != 1) throw new InvalidOperationException("The expected DATA row was not updated.");
                 sqlite3_finalize(statement); statement = IntPtr.Zero;
                 Execute(db, "COMMIT");
             }
