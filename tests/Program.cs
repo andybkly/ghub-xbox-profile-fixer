@@ -183,10 +183,10 @@ internal static class RegressionTests
             {
                 Sql(writer, "BEGIN IMMEDIATE");
                 Throws(() => lockedModel.ApplyWithBackup(applySource, () => { }), "active SQLite writer blocks applying");
-                Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "active writer failure leaves settings unchanged");
                 Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "active writer failure creates no backup");
             }
             finally { Sql(writer, "ROLLBACK"); sqlite3_close(writer); }
+            Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "active writer failure leaves settings unchanged");
             string lateSource = Database("late-journal", Fixture());
             var lateModel = GHubDatabase.Load(lateSource); lateModel.AddXboxGames(new[] { game });
             int lateChecks = 0;
@@ -204,10 +204,10 @@ internal static class RegressionTests
                 {
                     if (++lateLockChecks == 2) { lateWriter = Open(applySource); Sql(lateWriter, "BEGIN IMMEDIATE"); }
                 }), "writer starting after staging blocks replacement");
-                Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "late writer keeps source unchanged");
                 Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "late writer creates no backup");
             }
             finally { if (lateWriter != IntPtr.Zero) { Sql(lateWriter, "ROLLBACK"); sqlite3_close(lateWriter); } }
+            Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "late writer keeps source unchanged");
             var staleApply = GHubDatabase.Load(applySource);
             WinSqlite.WriteData(applySource, 1, Encoding.UTF8.GetBytes(Json.Serialize(Fixture())));
             byte[] changedBefore = File.ReadAllBytes(applySource);
