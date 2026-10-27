@@ -272,10 +272,9 @@ namespace GHubXBOXProfileFixer
             {
                 SaveCopy(source, staged);
                 ensureGHubClosed();
-                // New sidecars at this point mean activity resumed after preparation.
-                foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
-                    if (File.Exists(source + suffix))
-                        throw new IOException("Database activity resumed during the update. No replacement was made. Close the application using it and try again.");
+                // Read-only snapshotting can itself leave sidecars. Recover through
+                // SQLite again and verify the actual database, not filename presence.
+                WinSqlite.PrepareForReplacement(source);
                 if (!original.SequenceEqual(File.ReadAllBytes(source)))
                     throw new IOException("The source database changed. Reload it and try again.");
                 string stem = Path.Combine(Path.GetDirectoryName(source), Path.GetFileNameWithoutExtension(source) +
