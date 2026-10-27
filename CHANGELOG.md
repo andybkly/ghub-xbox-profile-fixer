@@ -1,5 +1,9 @@
 ## Unreleased
 
+- Refresh the interface with dark XBOX-green buttons, inherited text colours, rounded inputs, clearer navigation and selected game rows.
+- Add an original multi-resolution app icon for Windows Explorer, the title bar and the app header.
+- Keep XBOX uppercase in display text.
+
 - Fix false journal-file rejection after G HUB closes: recover/checkpoint through SQLite and check actual locks before replacement.
 
 - Add Apply to G HUB with validated replacement and automatic dated backups.

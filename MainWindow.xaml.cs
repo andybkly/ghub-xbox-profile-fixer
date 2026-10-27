@@ -48,13 +48,15 @@ namespace GHubXBOXProfileFixer
             CreatePage.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
             CompletionPage.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
 
-            SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "Database");
-            SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "Game library");
+            SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "Settings file");
+            SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "XBOX games");
             SetNavState(Step3Nav, Step3NavText, step == 3 || step == 4, step == 4, "3", "Add profiles");
         }
 
         private void SetNavState(System.Windows.Controls.Button border, System.Windows.Controls.TextBlock text, bool active, bool complete, string number, string label)
         {
+            border.BorderThickness = new Thickness(active ? 1 : 0);
+            border.BorderBrush = active ? new SolidColorBrush(Color.FromRgb(57, 101, 57)) : Brushes.Transparent;
             border.Background = active ? (Brush)FindResource("PaleGreenBrush") : Brushes.Transparent;
             text.Foreground = active || complete ? (Brush)FindResource("GreenBrush") : (Brush)FindResource("InkBrush");
             text.Text = (complete ? "✓" : number) + "     " + label;
@@ -178,7 +180,7 @@ namespace GHubXBOXProfileFixer
 
         private async void AddFolder_Click(object sender, RoutedEventArgs e)
         {
-            using (var dialog = new Forms.FolderBrowserDialog { Description = "Select an XboxGames folder, game folder, or Content folder" })
+            using (var dialog = new Forms.FolderBrowserDialog { Description = "Select an XBOX game library, game folder, or Content folder" })
             {
                 if (dialog.ShowDialog() != Forms.DialogResult.OK) return;
                 if (!customRoots.Contains(dialog.SelectedPath, StringComparer.OrdinalIgnoreCase)) customRoots.Add(dialog.SelectedPath);
@@ -356,7 +358,7 @@ namespace GHubXBOXProfileFixer
         public bool CanSelect => !Game.AlreadyRegistered;
         public string Detection => Game.ManifestDetected ? "From manifest" : "Check executable";
         public string Status => Game.AlreadyRegistered ? "Already added" : "Missing from G Hub";
-        public Brush StatusBrush => Game.AlreadyRegistered ? new SolidColorBrush(Color.FromRgb(157, 170, 185)) : new SolidColorBrush(Color.FromRgb(131, 225, 181));
+        public Brush StatusBrush => Game.AlreadyRegistered ? new SolidColorBrush(Color.FromRgb(157, 170, 185)) : new SolidColorBrush(Color.FromRgb(160, 215, 160));
         public bool Selected
         {
             get => selected;

@@ -7,6 +7,7 @@
     <AssemblyName>GHubXBOXGamePassProfileFixer</AssemblyName>
     <RootNamespace>GHubXBOXProfileFixer</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/AppIcon.ico</ApplicationIcon>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <DebugType>portable</DebugType>
@@ -27,5 +28,9 @@
     <Compile Remove="Program.cs" />
     <Compile Remove="tests/**/*.cs" />
     <Compile Remove="MainForm.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets/AppIcon.ico" />
+    <Resource Include="Assets/AppIcon.png" />
   </ItemGroup>
 </Project>

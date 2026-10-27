@@ -1,9 +1,9 @@
 <Window x:Class="GHubXBOXProfileFixer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="G HUB · Xbox Profile Fixer"
+        Title="G HUB · XBOX Profile Fixer" Icon="Assets/AppIcon.ico"
         Width="1180" Height="800" MinWidth="1040" MinHeight="700"
-        WindowStartupLocation="CenterScreen" Background="{StaticResource CanvasBrush}"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource CanvasBrush}" Foreground="{StaticResource InkBrush}"
         FontFamily="Segoe UI" UseLayoutRounding="True" SnapsToDevicePixels="True">
     <Grid x:Name="Workspace">
         <Grid.RowDefinitions>
@@ -12,16 +12,17 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="26,0">
-                <Border Width="30" Height="30" CornerRadius="8" Background="{StaticResource PaleGreenBrush}" Margin="0,0,12,0">
-                    <TextBlock Text="G" Foreground="{StaticResource GreenBrush}" FontFamily="Segoe UI Semibold"
-                               FontSize="18" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <Grid Margin="26,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Image Source="Assets/AppIcon.png" Width="36" Height="36" Margin="0,0,13,0" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="XBOX Profile Fixer" FontFamily="Segoe UI Semibold" FontSize="17" />
+                    <TextBlock Text="For Logitech G HUB" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,2,0,0" />
+                </StackPanel>
+                <Border Grid.Column="2" Background="#202920" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="10,5" VerticalAlignment="Center">
+                    <TextBlock Text="COMMUNITY EDITION" Foreground="{StaticResource MutedBrush}" FontSize="10" FontWeight="SemiBold" />
                 </Border>
-                <TextBlock Text="G HUB / Xbox Profile Fixer" FontFamily="Segoe UI Semibold" FontSize="18" VerticalAlignment="Center" />
-                <Border Background="#252F3A" CornerRadius="5" Padding="9,4" Margin="12,0,0,0">
-                    <TextBlock Text="COMMUNITY TOOL" Foreground="{StaticResource MutedBrush}" FontSize="12" />
-                </Border>
-            </StackPanel>
+            </Grid>
         </Border>
 
         <Grid Grid.Row="1">
@@ -31,7 +32,9 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
-                <StackPanel Margin="16,32">
+                <Grid Margin="16,28,16,24">
+                    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
                     <TextBlock Text="SETUP" Foreground="{StaticResource MutedBrush}" FontSize="11" FontWeight="SemiBold" Margin="16,0,0,20" />
                     <Button x:Name="Step1Nav" Style="{StaticResource SecondaryButton}" HorizontalContentAlignment="Left" Padding="16,15" Margin="0,0,0,8" Click="Step1Nav_Click">
                         <TextBlock x:Name="Step1NavText" Text="1     G Hub database" FontFamily="Segoe UI Semibold" FontSize="14" />
@@ -43,6 +46,13 @@
                         <TextBlock x:Name="Step3NavText" Text="3     Add profiles" FontFamily="Segoe UI Semibold" FontSize="14" />
                     </Button>
                 </StackPanel>
+                <Border Grid.Row="1" Background="#172317" CornerRadius="12" Padding="14" BorderBrush="#2C402C" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock Text="LOCAL &amp; PRIVATE" Foreground="{StaticResource GreenBrush}" FontSize="10" FontWeight="SemiBold" />
+                        <TextBlock Text="Your settings stay on this PC. Applying profiles saves a dated backup." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="12" LineHeight="18" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+                </Grid>
             </Border>
 
             <Grid Grid.Column="1" Margin="44,30,44,28">
@@ -56,12 +66,12 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="Connect G HUB" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Connect G HUB" FontFamily="Segoe UI Semibold" FontSize="30" />
                         <TextBlock Text="Choose your settings file to find games missing from G HUB." TextWrapping="Wrap"
                                    Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
 
-                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
+                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -99,11 +109,11 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Margin="0,0,0,18">
-                        <TextBlock Text="Your game library" FontFamily="Segoe UI Semibold" FontSize="32" />
-                        <TextBlock Text="Choose the games that need a profile. Check suggested executables before exporting." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
+                        <TextBlock Text="Your game library" FontFamily="Segoe UI Semibold" FontSize="30" />
+                        <TextBlock Text="Select missing games to add to G HUB. Review suggested executable paths before continuing." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
 
-                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="18,14">
+                    <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="18,14">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -135,7 +145,7 @@
                                    VerticalAlignment="Center" HorizontalAlignment="Left" />
                     </Grid>
 
-                    <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10">
+                    <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12">
                         <Grid>
                         <StackPanel x:Name="EmptyState" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20">
                             <TextBlock Text="Find your installed games" FontSize="19" FontWeight="SemiBold" HorizontalAlignment="Center" />
@@ -145,7 +155,7 @@
                             <ItemsControl x:Name="GamesItemsControl">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="18,13">
+                                        <Border x:Name="GameRow" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="18,15" Background="Transparent">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="28" />
@@ -155,7 +165,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <CheckBox IsChecked="{Binding Selected}" IsEnabled="{Binding CanSelect}" VerticalAlignment="Center"
                                                           Click="GameCheckBox_Click" AutomationProperties.Name="{Binding Name}" />
-                                                <Border Grid.Column="1" Width="38" Height="38" CornerRadius="7" Background="#252F3A" VerticalAlignment="Center">
+                                                <Border Grid.Column="1" Width="38" Height="38" CornerRadius="7" Background="#273327" VerticalAlignment="Center">
                                                     <Image Source="{Binding Icon}" Width="34" Height="34" Stretch="Uniform" />
                                                 </Border>
                                                 <StackPanel Grid.Column="2" Margin="12,0,18,0" VerticalAlignment="Center">
@@ -164,11 +174,17 @@
                                                                TextTrimming="CharacterEllipsis" Margin="0,3,0,0" />
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right">
-                                                    <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" FontSize="13" HorizontalAlignment="Right" />
+                                                    <Border Background="#232D23" BorderBrush="#3B4C3B" BorderThickness="1" CornerRadius="10" Padding="8,4">
+                                                        <TextBlock Text="{Binding Status}" Foreground="{Binding StatusBrush}" FontSize="11" HorizontalAlignment="Right" />
+                                                    </Border>
                                                     <TextBlock Text="{Binding Detection}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0" HorizontalAlignment="Right" />
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding Selected}" Value="True"><Setter TargetName="GameRow" Property="Background" Value="#1B2B1B" /></DataTrigger>
+                                            <Trigger SourceName="GameRow" Property="IsMouseOver" Value="True"><Setter TargetName="GameRow" Property="BorderBrush" Value="#637963" /></Trigger>
+                                        </DataTemplate.Triggers>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -197,10 +213,10 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
-                        <TextBlock Text="Add profiles to G HUB" FontFamily="Segoe UI Semibold" FontSize="32" />
+                        <TextBlock Text="Add profiles to G HUB" FontFamily="Segoe UI Semibold" FontSize="30" />
                         <TextBlock Text="Update your selected settings.db automatically, or save a separate copy for manual installation." TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" FontSize="15" Margin="0,5,0,0" />
                     </StackPanel>
-                    <Border Grid.Row="1" MaxHeight="300" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
+                    <Border Grid.Row="1" MaxHeight="300" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><StackPanel>
                             <TextBlock Text="SELECTED PROFILES" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,14" />
                             <TextBlock x:Name="CreateCountText" FontFamily="Segoe UI Semibold" FontSize="18" />
@@ -233,12 +249,15 @@
                 <Grid x:Name="CompletionPage" Visibility="Collapsed">
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                     <StackPanel Grid.Row="0" Margin="0,0,0,24">
+                        <Border Width="44" Height="44" CornerRadius="22" Background="#1D341D" HorizontalAlignment="Left" Margin="0,0,0,14">
+                            <TextBlock Text="✓" FontSize="25" Foreground="{StaticResource GreenBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
                         <TextBlock Text="Your profiles are installed" FontFamily="Segoe UI Semibold" FontSize="30" TextWrapping="Wrap" />
                         <TextBlock x:Name="AppliedCountText" Foreground="{StaticResource GreenBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
                     </StackPanel>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel>
-                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="22">
+                            <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="12" Padding="22">
                                 <StackPanel>
                                     <TextBlock Text="Your backup is safe" FontFamily="Segoe UI Semibold" FontSize="18" />
                                     <TextBlock x:Name="BackupSavedText" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,10,0,0" />
