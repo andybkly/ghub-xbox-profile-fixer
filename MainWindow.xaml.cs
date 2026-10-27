@@ -23,6 +23,7 @@ namespace GHubXBOXProfileFixer
         private readonly List<string> customRoots = new List<string>();
         private int currentStep = 1;
         private bool scanning;
+        private string lastBackupPath;
         private readonly List<XboxGame> manualGames = new List<XboxGame>();
 
         public MainWindow()
@@ -45,10 +46,11 @@ namespace GHubXBOXProfileFixer
             DatabasePage.Visibility = step == 1 ? Visibility.Visible : Visibility.Collapsed;
             GamesPage.Visibility = step == 2 ? Visibility.Visible : Visibility.Collapsed;
             CreatePage.Visibility = step == 3 ? Visibility.Visible : Visibility.Collapsed;
+            CompletionPage.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
 
             SetNavState(Step1Nav, Step1NavText, step == 1, step > 1, "1", "Database");
             SetNavState(Step2Nav, Step2NavText, step == 2, step > 2, "2", "Game library");
-            SetNavState(Step3Nav, Step3NavText, step == 3, false, "3", "Apply profiles");
+            SetNavState(Step3Nav, Step3NavText, step == 3 || step == 4, step == 4, "3", "Add profiles");
         }
 
         private void SetNavState(System.Windows.Controls.Button border, System.Windows.Controls.TextBlock text, bool active, bool complete, string number, string label)
@@ -255,13 +257,30 @@ namespace GHubXBOXProfileFixer
                 });
             }
             catch (Exception ex) { ShowError("The update could not be completed.\n\n" + ex.Message); return; }
-            MessageBox.Show(this,
-                "Added " + added + (added == 1 ? " game profile." : " game profiles.") +
-                "\n\nUpdated:\n" + DatabasePathBox.Text + "\n\nOriginal settings backed up to:\n" + backup +
-                "\n\nStart G HUB to use the profiles.",
-                "Profiles applied", MessageBoxButton.OK, MessageBoxImage.Information);
-            try { RefreshRegistration(); ShowStep(2); }
-            catch { ShowStep(1); SetDatabaseReady(false); }
+            lastBackupPath = backup;
+            AppliedCountText.Text = added + (added == 1 ? " game profile added. No manual installation is needed." : " game profiles added. No manual installation is needed.");
+            BackupSavedText.Text = "Updated database:\n" + DatabasePathBox.Text + "\n\nOriginal settings saved as:\n" + backup;
+            try { RefreshRegistration(); } catch { SetDatabaseReady(false); }
+            ShowStep(4);
+        }
+
+        private void ShowBackup_Click(object sender, RoutedEventArgs e)
+        {
+            try { Process.Start("explorer.exe", "/select,\"" + lastBackupPath + "\""); }
+            catch (Exception ex) { ShowError("Could not open the backup folder.\n\n" + lastBackupPath + "\n\n" + ex.Message); }
+        }
+
+        private void OpenGHub_Click(object sender, RoutedEventArgs e)
+        {
+            string executable = new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 }
+                .Select(folder => Path.Combine(Environment.GetFolderPath(folder), "LGHUB", "lghub.exe")).FirstOrDefault(File.Exists);
+            if (executable == null)
+            {
+                MessageBox.Show(this, "Your profiles are installed. Open G HUB from the Windows Start menu to continue.", "Open G HUB", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            try { Process.Start(new ProcessStartInfo(executable) { UseShellExecute = true }); }
+            catch (Exception ex) { ShowError("Your profiles are installed, but G HUB could not be opened. Open it from the Start menu.\n\n" + ex.Message); }
         }
 
         private void CreateDatabase_Click(object sender, RoutedEventArgs e)
@@ -271,7 +290,7 @@ namespace GHubXBOXProfileFixer
             if (selected.Count == 0) { ShowError("Select at least one missing game first."); return; }
             var save = new SaveFileDialog
             {
-                Title = "Save the fixed database",
+                Title = "Save a separate database for manual installation",
                 Filter = "Database files (*.db)|*.db",
                 InitialDirectory = Path.GetDirectoryName(DatabasePathBox.Text),
                 FileName = "settings-XBOX-profiles-fixed.db"
@@ -286,8 +305,10 @@ namespace GHubXBOXProfileFixer
                 database.SaveCopy(DatabasePathBox.Text, save.FileName);
                 MessageBox.Show(this,
                     "Created " + added + (added == 1 ? " new G Hub profile.\n\n" : " new G Hub profiles.\n\n") +
-                    "Created:\n" + save.FileName + "\n\nYour original database was not changed.",
-                    "Fixed database created", MessageBoxButton.OK, MessageBoxImage.Information);
+                    "Saved copy:\n" + save.FileName + "\n\nThis copy has not been installed. Your current settings are unchanged." +
+                    "\n\nTo install it manually: keep G HUB closed, back up the original settings.db, then copy this file into that folder and name it settings.db." +
+                    "\n\nFor automatic installation, return here and choose Back up & update G HUB.",
+                    "Separate copy saved — not installed", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex) { ShowError("The fixed database could not be created. Your original database was not changed.\n\n" + ex.Message); }
         }

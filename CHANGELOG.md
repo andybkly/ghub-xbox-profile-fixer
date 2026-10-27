@@ -1,5 +1,7 @@
 ## Unreleased
 
+- Fix false journal-file rejection after G HUB closes: recover/checkpoint through SQLite and check actual locks before replacement.
+
 - Add Apply to G HUB with validated replacement and automatic dated backups.
 - Preserve existing same-day backups with numbered filenames.
 - Block applying when G HUB is running, settings changed, or SQLite journal files remain.

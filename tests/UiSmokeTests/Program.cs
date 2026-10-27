@@ -90,6 +90,12 @@ internal static class UiSmokeTests
             window.Width = window.MinWidth; window.Height = window.MinHeight; Capture("03-library-minimum-size");
             window.Width = 1180; window.Height = 800;
             Call("PrepareCreatePage"); Capture("04-export");
+            ((TextBlock)window.FindName("AppliedCountText")).Text = "1 game profile added. No manual installation is needed.";
+            ((TextBlock)window.FindName("BackupSavedText")).Text = "Updated database:\n" + pathBox.Text + "\n\nOriginal settings saved as:\n" + Path.Combine(fixture, "settings-backup-27102026.db");
+            Call("ShowStep", 4);
+            Check(((Grid)window.FindName("CompletionPage")).Visibility == Visibility.Visible && ((Grid)window.FindName("CreatePage")).Visibility == Visibility.Collapsed, "completion view replaces update controls");
+            Capture("05-installed");
+            window.Width = window.MinWidth; window.Height = window.MinHeight; Capture("06-installed-minimum-size");
             pathBox.Text = Path.Combine(fixture, "no-light.db");
             Check(games.Count == 0 && Field<List<XboxGame>>("manualGames").Count == 0, "database change clears stale selection and manual entries");
             window.Close();

@@ -154,9 +154,39 @@ internal static class RegressionTests
             Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "aborted apply keeps source unchanged");
             Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "aborted apply creates no misleading backup");
             Check(!Directory.GetFiles(folder, ".ghub-apply-*").Any(), "aborted apply removes staged files");
-            File.WriteAllText(applySource + "-wal", "sidecar");
-            Throws(() => GHubDatabase.Load(output).ApplyWithBackup(applySource, () => { }), "SQLite sidecars block in-place apply");
-            File.Delete(applySource + "-wal");
+            // Simulate sidecars left by an exited process using a stable copy of an idle WAL DB.
+            string seed = Database("leftover-seed", Fixture());
+            string leftover = Path.Combine(folder, "leftover.db");
+            IntPtr seedHandle = Open(seed);
+            try
+            {
+                Sql(seedHandle, "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE pending(value TEXT); INSERT INTO pending VALUES('preserve me');");
+                File.Copy(seed, leftover);
+                File.Copy(seed + "-wal", leftover + "-wal");
+            }
+            finally { sqlite3_close(seedHandle); }
+            Check(File.Exists(leftover + "-wal"), "leftover WAL fixture exists without an open connection");
+            var leftoverModel = GHubDatabase.Load(leftover); leftoverModel.AddXboxGames(new[] { game });
+            string leftoverBackup = leftoverModel.ApplyWithBackup(leftover, () => { });
+            Check(GHubDatabase.Load(leftover).RegisteredPaths().Contains(gameExe), "apply succeeds with leftover WAL files");
+            foreach (string path in new[] { leftover, leftoverBackup })
+            {
+                IntPtr verify = Open(path);
+                try { Sql(verify, "CREATE TABLE verify_pending AS SELECT * FROM pending WHERE value='preserve me';"); }
+                finally { sqlite3_close(verify); }
+                Check(WinSqlite.IntegrityCheck(path) == "ok", "committed WAL table preserved in " + Path.GetFileName(path));
+            }
+            // A real writer must still block applying; no replacement or backup may appear.
+            var lockedModel = GHubDatabase.Load(applySource);
+            IntPtr writer = Open(applySource);
+            try
+            {
+                Sql(writer, "BEGIN IMMEDIATE");
+                Throws(() => lockedModel.ApplyWithBackup(applySource, () => { }), "active SQLite writer blocks applying");
+                Check(appliedBefore.SequenceEqual(File.ReadAllBytes(applySource)), "active writer failure leaves settings unchanged");
+                Check(backupsBefore == Directory.GetFiles(folder, "apply-backup-*.db").Length, "active writer failure creates no backup");
+            }
+            finally { Sql(writer, "ROLLBACK"); sqlite3_close(writer); }
             var staleApply = GHubDatabase.Load(applySource);
             WinSqlite.WriteData(applySource, 1, Encoding.UTF8.GetBytes(Json.Serialize(Fixture())));
             byte[] changedBefore = File.ReadAllBytes(applySource);

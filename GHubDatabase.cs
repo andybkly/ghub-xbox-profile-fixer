@@ -264,19 +264,18 @@ namespace GHubXBOXProfileFixer
             if (ensureGHubClosed == null) throw new ArgumentNullException(nameof(ensureGHubClosed));
             string source = Path.GetFullPath(sourcePath);
             string staged = Path.Combine(Path.GetDirectoryName(source), ".ghub-apply-" + Guid.NewGuid().ToString("N") + ".db");
-            Action check = () =>
-            {
-                ensureGHubClosed();
-                foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
-                    if (File.Exists(source + suffix))
-                        throw new IOException("The database has SQLite journal files. Open G HUB, quit it normally, then try again.");
-            };
-            check();
+            ensureGHubClosed();
+            // Merge committed WAL data through SQLite; never delete sidecars by hand.
+            WinSqlite.PrepareForReplacement(source);
             byte[] original = File.ReadAllBytes(source);
             try
             {
                 SaveCopy(source, staged);
-                check();
+                ensureGHubClosed();
+                // New sidecars at this point mean activity resumed after preparation.
+                foreach (string suffix in new[] { "-wal", "-shm", "-journal" })
+                    if (File.Exists(source + suffix))
+                        throw new IOException("Database activity resumed during the update. No replacement was made. Close the application using it and try again.");
                 if (!original.SequenceEqual(File.ReadAllBytes(source)))
                     throw new IOException("The source database changed. Reload it and try again.");
                 string stem = Path.Combine(Path.GetDirectoryName(source), Path.GetFileNameWithoutExtension(source) +

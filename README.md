@@ -44,7 +44,7 @@ Windows SmartScreen may display an **Unknown publisher** warning because the pro
 
 1. Quit G Hub from its system-tray icon.
 2. In Task Manager, confirm that `lghub.exe`, `lghub_agent.exe` and `lghub_system_tray.exe` are closed.
-3. The **Apply to G HUB** option automatically creates a dated backup beside the selected database.
+3. The **Back up & update G HUB** option automatically creates a dated backup beside the selected database.
 
 The utility checks for running G Hub processes and refuses to create a database while they are open.
 
@@ -56,12 +56,12 @@ The utility checks for running G Hub processes and refuses to create a database 
 4. Scan for installed games.
 5. Review the executable path for each result.
 6. Select the missing games you want to add.
-7. Choose **Review selection**, then **Apply to G HUB**.
-8. Start G HUB. No manual copying or renaming is needed.
+7. Choose **Review selection**, then **Back up & update G HUB**.
+8. The completion screen shows the backup path and recovery instructions. Choose **Open G HUB**. No manual copying or renaming is needed.
 
-The original is saved beside the selected database as `settings-backup-27102026.db` (using the current date). Further backups on the same day use `-2`, `-3`, etc. Existing backups are preserved. Applying is blocked while G HUB is running or SQLite journal files are present.
+The original is saved beside the selected database as `settings-backup-27102026.db` (using the current date). Further backups on the same day use `-2`, `-3`, etc. Existing backups are preserved. Applying is blocked while G HUB is running or SQLite cannot obtain the required locks. Leftover SQLite journals are recovered and checkpointed through SQLite before replacement; never delete them manually.
 
-To save a separate database instead, choose **Export copy…**.
+To save a separate database instead, choose **Save a separate copy…**.
 
 If a game is not detected automatically, use **Add folder** or **Add executable**.
 

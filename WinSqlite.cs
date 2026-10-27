@@ -58,6 +58,34 @@ namespace GHubXBOXProfileFixer
             }
         }
 
+        // File existence is not a lock test: clean shutdowns can leave sidecars.
+        // Ask SQLite to recover/checkpoint and return a standalone database.
+        public static void PrepareForReplacement(string path)
+        {
+            IntPtr db = Open(path, OpenReadWrite), statement = IntPtr.Zero;
+            try
+            {
+                Execute(db, "PRAGMA busy_timeout=1000");
+                statement = Prepare(db, "PRAGMA wal_checkpoint(TRUNCATE)");
+                if (sqlite3_step(statement) != Row || sqlite3_column_int64(statement, 0) != 0)
+                    throw new InvalidOperationException("SQLite could not finish checkpointing. Another process may still be using the database.");
+                sqlite3_finalize(statement); statement = IntPtr.Zero;
+                statement = Prepare(db, "PRAGMA journal_mode=DELETE");
+                if (sqlite3_step(statement) != Row ||
+                    !String.Equals(Marshal.PtrToStringAnsi(sqlite3_column_text(statement, 0)), "delete", StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("SQLite could not prepare a standalone database. Another process may still be using it.");
+                sqlite3_finalize(statement); statement = IntPtr.Zero;
+                // Confirm an exclusive SQLite write lock can be acquired, without changing data.
+                Execute(db, "BEGIN EXCLUSIVE");
+                Execute(db, "COMMIT");
+            }
+            finally
+            {
+                if (statement != IntPtr.Zero) sqlite3_finalize(statement);
+                sqlite3_close(db);
+            }
+        }
+
         private static byte[] Utf8(string value) => Encoding.UTF8.GetBytes(value + "\0");
         private static string Error(IntPtr db) => Marshal.PtrToStringAnsi(sqlite3_errmsg(db));
 
