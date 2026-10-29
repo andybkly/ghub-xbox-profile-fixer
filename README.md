@@ -2,53 +2,53 @@
 
 # G Hub XBOX Profile Fixer
 
-An unofficial, open-source Windows utility for PC games installed through the Xbox app or PC Game Pass that Logitech G HUB fails to detect.
+An unofficial, open-source Windows utility for PC games installed through the XBOX app or PC Game Pass that Logitech G Hub fails to detect.
 
-The tool scans Xbox game installations, identifies the actual game executables and creates the missing G HUB application and profile records selected by the user.
+The tool scans XBOX game installations, identifies the actual game executables and creates the missing G Hub application and profile records selected by the user.
 
 It does not modify game files. It builds and validates the updated database, then applies it with an automatic dated backup. Exporting a separate copy remains available.
 
-> This project is not affiliated with or endorsed by Logitech or Microsoft. Logitech, G HUB, Xbox and Game Pass are trademarks of their respective owners.
+> This project is not affiliated with or endorsed by Logitech or Microsoft. Logitech, G Hub, XBOX and Game Pass are trademarks of their respective owners.
 
 ## Download
 
-### [⬇ Download the latest version (.exe)](https://github.com/andybkly/ghub-xbox-profile-fixer/releases/latest/download/GHubXBOXGamePassProfileFixer.exe)
+### [⬇ Download the latest version (.exe)](https://github.com/andybkly/ghub-XBOX-profile-fixer/releases/latest/download/GHubXBOXGamePassProfileFixer.exe)
 
 The EXE is built from the public source using GitHub Actions. Tagged release builds generate a SHA-256 checksum and build-provenance attestation.
 
 **Windows security notice:** This application is currently unsigned. Windows SmartScreen or Smart App Control may warn about or block the executable. Smart App Control can prevent unsigned applications from running entirely. The public source code, automated build history and SHA-256 checksums are available for inspection.
 
-**[View the latest release, release notes and checksums](https://github.com/andybkly/ghub-xbox-profile-fixer/releases/latest)**
+**[View the latest release, release notes and checksums](https://github.com/andybkly/ghub-XBOX-profile-fixer/releases/latest)**
 
 ## What it does
 
-- Scans Xbox games installed on any ready drive
-- Reads Xbox `.GamingRoot` markers and common `XboxGames` folders
-- Supports custom Xbox installation folders
+- Scans XBOX games installed on any ready drive
+- Reads XBOX `.GamingRoot` markers and common `XBOXGames` folders
+- Supports custom XBOX installation folders
 - Uses `MicrosoftGame.config` to identify the intended PC executable where available
-- Shows games that are already registered or missing from G HUB
-- Displays local Xbox manifest artwork, with embedded executable icons as a fallback
+- Shows games that are already registered or missing from G Hub
+- Displays local XBOX manifest artwork, with embedded executable icons as a fallback
 - Includes manual folder and executable options for unusual games
-- Creates G HUB application and default-profile records
-- Starts new profiles with the current G HUB Desktop assignments
+- Creates G Hub application and default-profile records
+- Starts new profiles with the current G Hub Desktop assignments
 - Automatically preserves the original database in a dated backup when applying profiles
 - Performs SQLite integrity and profile-relationship checks on the output
 
 ## Requirements
 
 - Windows 10 or Windows 11
-- Logitech G HUB
-- A PC game installed through the Xbox app or PC Game Pass
+- Logitech G Hub
+- A PC game installed through the XBOX app or PC Game Pass
 - No Python, PowerShell script or installer required
 - No administrator access normally required
 
 ## Before using it
 
-1. Quit G HUB from its system-tray icon.
+1. Quit G Hub from its system-tray icon.
 2. In Task Manager, confirm that `lghub.exe`, `lghub_agent.exe` and `lghub_system_tray.exe` are closed.
-3. The **Back up & update G HUB** option automatically creates a dated backup beside the selected database.
+3. The **Back up & update G Hub** option automatically creates a dated backup beside the selected database.
 
-The utility checks for running G HUB processes and prevents database changes while they are open.
+The utility checks for running G Hub processes and prevents database changes while they are open.
 
 ## How to use it
 
@@ -58,12 +58,12 @@ The utility checks for running G HUB processes and prevents database changes whi
 4. Scan for installed games.
 5. Review the executable path for each result.
 6. Select the missing games you want to add.
-7. Choose **Review selection**, then **Back up & update G HUB**.
-8. The completion screen shows the backup path and recovery instructions. Choose **Open G HUB**. No manual copying or renaming is needed.
+7. Choose **Review selection**, then **Back up & update G Hub**.
+8. The completion screen shows the backup path and recovery instructions. Choose **Open G Hub**. No manual copying or renaming is needed.
 
 The original database is backed up beside the selected database using the current date, for example `settings-backup-DDMMYYYY.db`. Further backups on the same day use `-2`, `-3`, etc. Existing backups are preserved.
 
-Applying is blocked while G HUB is running or SQLite cannot obtain the required locks. Leftover SQLite journals are recovered and checkpointed through SQLite before replacement; never delete them manually.
+Applying is blocked while G Hub is running or SQLite cannot obtain the required locks. Leftover SQLite journals are recovered and checkpointed through SQLite before replacement; never delete them manually.
 
 To save a separate database instead, choose **Save a separate copy…**.
 
@@ -73,21 +73,21 @@ If a game is not detected automatically, use **Add folder** or **Add executable*
 
 If you chose to export a separate database rather than applying changes automatically:
 
-1. Keep G HUB closed.
+1. Keep G Hub closed.
 2. Back up the original `%LOCALAPPDATA%\LGHUB\settings.db`.
 3. Rename the generated file to `settings.db`.
 4. Copy it into `%LOCALAPPDATA%\LGHUB\`, replacing the existing file.
-5. Start G HUB and configure or test the new game profile.
+5. Start G Hub and configure or test the new game profile.
 
-If anything is wrong, close G HUB and restore your backup.
+If anything is wrong, close G Hub and restore your backup.
 
 ## Tested
 
-The initial workflow was verified using Among Us installed through PC Game Pass. The game was absent from G HUB before conversion, then appeared and activated correctly after the updated database was installed.
+The initial workflow was verified using Among Us installed through PC Game Pass. The game was absent from G Hub before conversion, then appeared and activated correctly after the updated database was installed.
 
 Game installation layouts vary, so please report titles that are not detected correctly.
 
-Compatibility with every G HUB version and Xbox game installation has not been established.
+Compatibility with every G Hub version and XBOX game installation has not been established.
 
 ## Privacy and security
 
@@ -133,7 +133,7 @@ Get-FileHash .\GHubXBOXGamePassProfileFixer.exe -Algorithm SHA256
 
 Compare it with `GHubXBOXGamePassProfileFixer.exe.sha256` attached to the same release.
 
-The repository's [GitHub Actions page](https://github.com/andybkly/ghub-xbox-profile-fixer/actions) shows the automated build history and tagged commits.
+The repository's [GitHub Actions page](https://github.com/andybkly/ghub-XBOX-profile-fixer/actions) shows the automated build history and tagged commits.
 
 ## Licence
 
@@ -147,4 +147,4 @@ Synthetic fixtures cover duplicate additions, card links, absent lighting refere
 
 UI checks cover retained manual entries, retained deselections, database changes and button states, and capture screenshots at normal and minimum window sizes.
 
-These checks do not establish compatibility with every G HUB version or actual game profile switching. Test the generated database with G HUB on Windows before release.
+These checks do not establish compatibility with every G Hub version or actual game profile switching. Test the generated database with G Hub on Windows before release.
